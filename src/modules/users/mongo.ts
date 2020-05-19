@@ -1,10 +1,27 @@
-import * as mongoose from 'mongoose';
+import { Document, Schema } from 'mongoose';
 
-export const UserSchema = new mongoose.Schema({
+export interface User extends Document {
+  readonly email: string;
+  readonly nome: string;
+  admin: boolean;
+  ativo: boolean;
+  password: string;
+  hashAtivacao: [
+    {
+      hash: string;
+      validade: Date;
+      utilizado: boolean;
+      novoUsuario: boolean;
+    },
+  ];
+}
+
+export const UserSchema = new Schema({
   email: String,
   nome: String,
-  password: String,
+  admin: Boolean,
   ativo: Boolean,
+  password: String,
   hashAtivacao: [
     {
       hash: String,

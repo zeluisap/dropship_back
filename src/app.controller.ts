@@ -6,10 +6,7 @@ import { NotificacaoService } from './modules/notificacao/notificacao.service';
 
 @Controller()
 export class AppController {
-  constructor(
-    private authService: AuthService,
-    private notificacaoService: NotificacaoService,
-  ) {}
+  constructor(private authService: AuthService) {}
 
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
