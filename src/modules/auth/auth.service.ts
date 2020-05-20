@@ -45,10 +45,23 @@ export class AuthService {
         throw new Error('Login inválido!');
       }
 
+      const { email } = user;
+      if (!email) {
+        throw new UnauthorizedException();
+      }
+
+      const usuario = await this.userService.findOne({
+        email,
+      });
+
+      if (!usuario) {
+        throw new UnauthorizedException();
+      }
+
       const payload = { ...user };
       return {
         access_token: this.jwtService.sign(payload),
-        user: payload,
+        user: usuario,
       };
     } catch (error) {
       throw new NegocioException('Falha ao efetuar login!');
