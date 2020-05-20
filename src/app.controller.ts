@@ -20,4 +20,11 @@ export class AppController {
   async getProfile(@Request() req) {
     return req.user;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('auth/logout')
+  async logout(@Request() req) {
+    req.session.token = null;
+    return true;
+  }
 }

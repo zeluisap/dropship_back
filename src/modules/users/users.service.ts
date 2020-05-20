@@ -21,7 +21,7 @@ export class UsersService {
   ) {}
 
   async findAll(): Promise<User[]> {
-    return await this.userModel.find();
+    return await this.userModel.find().sort('nome');
   }
 
   async findOne(user): Promise<User | undefined> {

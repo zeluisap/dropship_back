@@ -5,8 +5,8 @@ import {
   Post,
   Body,
   Param,
+  Get,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AtivarUserDto, RedefinirUserDto } from './dto/user-dto';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user-dto';
@@ -27,6 +27,12 @@ export class UserController {
   @Post('alterar/:id')
   async alterar(@Param('id') id, @Body() userDto: AlterarUserDto) {
     return await this.usersService.alterar(id, userDto);
+  }
+
+  @UseGuards(AdminAuthGuard)
+  @Get('')
+  async get() {
+    return await this.usersService.findAll();
   }
 
   @Post('ativar')
