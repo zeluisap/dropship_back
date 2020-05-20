@@ -48,6 +48,7 @@ export class AuthService {
       const payload = { ...user };
       return {
         access_token: this.jwtService.sign(payload),
+        user: payload,
       };
     } catch (error) {
       throw new NegocioException('Falha ao efetuar login!');
