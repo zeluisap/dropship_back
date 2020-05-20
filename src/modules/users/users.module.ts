@@ -5,6 +5,7 @@ import { getUserSchema } from './mongo';
 import { UserResolver } from './gql/user.resolver';
 import { AuthModule } from '../auth/auth.module';
 import { NotificacaoModule } from '../notificacao/notificacao.module';
+import { UserController } from './user.controller';
 
 @Module({
   imports: [
@@ -19,5 +20,6 @@ import { NotificacaoModule } from '../notificacao/notificacao.module';
   ],
   providers: [UsersService, UserResolver],
   exports: [UsersService, MongooseModule],
+  controllers: [UserController],
 })
 export class UsersModule {}

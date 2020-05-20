@@ -10,6 +10,7 @@ import * as md5 from 'md5';
 import * as moment from 'moment';
 import { NotificacaoService } from '../notificacao/notificacao.service';
 import { ConfigService } from '@nestjs/config';
+import { AlterarUserDto } from './dto/alterar-user-dto';
 
 @Injectable()
 export class UsersService {
@@ -59,6 +60,23 @@ export class UsersService {
     this.notificaCriacao(user);
 
     return result;
+  }
+
+  async alterar(id, dados: AlterarUserDto): Promise<User> {
+    if (!id) {
+      throw new NegocioException('Falha! Identificador não informado!');
+    }
+
+    const user = await this.userModel.findOne({
+      _id: id,
+    });
+    if (!user) {
+      throw new NegocioException('Falha! Usuário não localizado!');
+    }
+
+    user.set(dados);
+
+    return await user.save();
   }
 
   async notificaCriacao(user) {
@@ -198,7 +216,7 @@ export class UsersService {
       throw new NegocioException('Hash não corresponde ao usuário informado!');
     }
 
-    user.password = md5(senha);
+    user.senha = md5(senha);
     user.ativo = true;
 
     ativacao.utilizado = true;

@@ -19,23 +19,24 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = (
-      await this.userService.findOne({
-        email: username,
-      })
-    ).toJSON();
+    const user = await this.userService.findOne({
+      email: username,
+    });
 
     // if (!user.ativo) {
     //   throw new NegocioException('Usuário inválido!');
     // }
 
-    if (!(user && user.password === md5(pass))) {
+    if (!(user && user.senha === md5(pass))) {
       return null;
     }
 
-    const { password, ...result } = user;
+    const json = user.toJSON();
 
-    return result;
+    return {
+      email: json.email,
+      nome: json.nome,
+    };
   }
 
   async login(user: any) {
