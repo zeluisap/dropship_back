@@ -17,6 +17,8 @@ import { UtilService } from './util/util.service';
   imports: [
     AuthModule,
     UsersModule,
+    NotificacaoModule,
+    ProdutoModule,
 
     HttpModule.register({
       timeout: 5000,
@@ -68,10 +70,6 @@ import { UtilService } from './util/util.service';
       }),
       inject: [ConfigService],
     }),
-
-    NotificacaoModule,
-
-    ProdutoModule,
   ],
   controllers: [AppController],
   providers: [

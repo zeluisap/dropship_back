@@ -2,6 +2,8 @@ import { Document, Schema } from 'mongoose';
 
 export interface Produto extends Document {
   readonly origemId: string;
+  lojaIntegradaId: string;
+  lojaIntegradaImportado: boolean;
 
   readonly nome: string;
   readonly descricaoCompleta: string;
@@ -24,6 +26,8 @@ export interface Produto extends Document {
 
 export const ProdutoSchema = new Schema({
   origemId: String,
+  lojaIntegradaId: String,
+  lojaIntegradaImportado: Boolean,
 
   nome: String,
   descricaoCompleta: String,
@@ -56,6 +60,18 @@ export const getProdutoSchema = function() {
     if (user.get('ativo') === undefined) {
       user.set({
         ativo: false,
+      });
+    }
+
+    if (user.get('lojaIntegradaId') === undefined) {
+      user.set({
+        lojaIntegradaId: null,
+      });
+    }
+
+    if (user.get('lojaIntegradaImportado') === undefined) {
+      user.set({
+        lojaIntegradaImportado: false,
       });
     }
   });

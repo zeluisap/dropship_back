@@ -5,6 +5,8 @@ import { ProdutoService } from './produto/produto.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { getProdutoSchema } from './produto-mongo';
 import { AuthModule } from '../auth/auth.module';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from 'src/filter/http-exception.filter';
 
 @Module({
   imports: [

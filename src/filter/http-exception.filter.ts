@@ -12,7 +12,7 @@ import { NegocioException } from 'src/exceptions/negocio-exception';
 import { GqlContextType } from '@nestjs/graphql';
 import * as _ from 'lodash';
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   constructor(private configService: ConfigService) {}
 
