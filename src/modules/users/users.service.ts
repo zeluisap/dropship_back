@@ -27,7 +27,7 @@ export class UsersService {
   async findOne(user): Promise<User | undefined> {
     const obj = await this.userModel.findOne(user);
     if (!obj) {
-      throw new NegocioException('Usuário não localizado!');
+      return null;
     }
     return obj;
     // const json = obj.toJSON();

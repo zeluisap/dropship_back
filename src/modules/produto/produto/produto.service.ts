@@ -9,6 +9,7 @@ import { Model } from 'mongoose';
 import { validateOrReject } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { ProdutoDto } from '../dto/produto-dto';
+import { UsersService } from 'src/modules/users/users.service';
 
 const StatusProduto = {
   ADICIONADO: 1,
@@ -22,11 +23,33 @@ export class ProdutoService {
   constructor(
     private utilService: UtilService,
     private currentUserService: CurrentUserService,
+    private userService: UsersService,
     @InjectModel('Produto') private produtoModel: Model<Produto>,
   ) {}
 
-  async importar(arquivo) {
-    const usuario = await this.currentUserService.getUsuarioLogado();
+  async get(id) {
+    if (!id) {
+      throw new Error('Nenhum ID informado.');
+    }
+
+    return this.produtoModel
+      .findOne({
+        _id: id,
+      })
+      .populate('parceiro', 'nome');
+  }
+
+  async importar(arquivo, parceiroId = null) {
+    let usuario = null;
+    if (parceiroId) {
+      usuario = await this.userService.findOne({
+        _id: parceiroId,
+      });
+      if (!usuario) {
+        usuario = await this.currentUserService.getUsuarioLogado();
+      }
+    }
+
     const planilhas = this.utilService.dadosPorUploadedArquivo(arquivo);
     const tratados = [];
 
@@ -38,7 +61,7 @@ export class ProdutoService {
       }
 
       for (const linha of linhas) {
-        const linhaTratada = await this.importarLinha(linha);
+        const linhaTratada = await this.importarLinha(linha, usuario);
         if (!linhaTratada) {
           return;
         }
@@ -50,14 +73,16 @@ export class ProdutoService {
     return tratados;
   }
 
-  async importarLinha(linha) {
+  async importarLinha(linha, usuario) {
     if (!linha) {
       return;
     }
 
-    const usuario = await this.currentUserService.getUsuarioLogado();
     if (!usuario) {
-      throw 'Falha! Usuário logado não localizado.';
+      usuario = await this.currentUserService.getUsuarioLogado();
+      if (!usuario) {
+        throw 'Falha! Usuário logado não localizado.';
+      }
     }
 
     const { mapeamento } = usuario;
@@ -114,7 +139,17 @@ export class ProdutoService {
     return valor;
   }
 
-  async importarConfirma(items) {
+  async importarConfirma(items, parceiroId = null) {
+    let usuario = null;
+    if (parceiroId) {
+      usuario = await this.userService.findOne({
+        _id: parceiroId,
+      });
+      if (!usuario) {
+        usuario = await this.currentUserService.getUsuarioLogado();
+      }
+    }
+
     this.validarProdutos(items);
     // const session = await this.produtoModel.db.startSession();
     // session.startTransaction();
@@ -127,7 +162,7 @@ export class ProdutoService {
     try {
       for (const item of items) {
         // const op = await this.salvarProduto(item, session);
-        const op = await this.salvarProduto(item);
+        const op = await this.salvarProduto(item, usuario);
         switch (op) {
           case StatusProduto.ADICIONADO:
             retorno.adicionados++;
@@ -174,24 +209,24 @@ export class ProdutoService {
   }
 
   // async salvarProduto(item, session) {
-  async salvarProduto(item) {
+  async salvarProduto(item, usuario) {
     let produto = await this.produtoModel.findOne({
       origemId: item.origem_id,
     });
     // .session(session);
 
     // const result = this.salvarProdutoSalvo(produto, item, session);
-    const result = await this.salvarProdutoSalvo(produto, item);
+    const result = await this.salvarProdutoSalvo(produto, item, usuario);
     if (result) {
       return result;
     }
 
     // return this.salvarProdutoNovo(produto, item, session);
-    return await this.salvarProdutoNovo(produto, item);
+    return await this.salvarProdutoNovo(produto, item, usuario);
   }
 
   // async salvarProdutoNovo(produto, item, session) {
-  async salvarProdutoNovo(produto, item) {
+  async salvarProdutoNovo(produto, item, usuario) {
     if (produto) {
       return null;
     }
@@ -204,10 +239,14 @@ export class ProdutoService {
       descricaoCompleta: item.descricao_completa,
       categoria: item.categoria,
       marca: item.marca,
+
       quantidade: item.quantidade,
       precoCheio: item.preco_cheio,
       precoCusto: item.preco_custo,
       precoPromocional: item.preco_promocional,
+      lojaIntegradaImportado: false,
+
+      parceiro: usuario._id,
     });
 
     // await produto.save({
@@ -218,7 +257,7 @@ export class ProdutoService {
     return StatusProduto.ADICIONADO;
   }
 
-  async salvarProdutoSalvo(produto, item) {
+  async salvarProdutoSalvo(produto, item, usuario) {
     if (!produto) {
       return null;
     }
@@ -228,6 +267,7 @@ export class ProdutoService {
       precoCheio: item.preco_cheio,
       precoCusto: item.preco_custo,
       precoPromocional: item.preco_promocional,
+      lojaIntegradaImportado: false,
     });
 
     // await produto.save({

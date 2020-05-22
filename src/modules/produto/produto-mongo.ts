@@ -22,6 +22,11 @@ export interface Produto extends Document {
   precoPromocional: number;
 
   ativo: boolean;
+
+  parceiro: {
+    id: string;
+    nome: string;
+  };
 }
 
 export const ProdutoSchema = new Schema({
@@ -46,6 +51,11 @@ export const ProdutoSchema = new Schema({
   precoPromocional: Number,
 
   ativo: Boolean,
+
+  parceiro: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
 });
 
 export const getProdutoSchema = function() {
