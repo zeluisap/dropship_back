@@ -19,7 +19,7 @@ export class UserController {
 
   @UseGuards(AdminAuthGuard)
   @Post('adicionar')
-  async salvar(@Body() userDto: CreateUserDto) {
+  async adicionar(@Body() userDto: CreateUserDto) {
     return await this.usersService.novo(userDto);
   }
 

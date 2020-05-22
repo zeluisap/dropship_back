@@ -10,6 +10,8 @@ import { MulterModule } from '@nestjs/platform-express';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './filter/http-exception.filter';
 import { NotificacaoModule } from './modules/notificacao/notificacao.module';
+import { ProdutoModule } from './modules/produto/produto.module';
+import { UtilService } from './util/util.service';
 
 @Module({
   imports: [
@@ -68,6 +70,8 @@ import { NotificacaoModule } from './modules/notificacao/notificacao.module';
     }),
 
     NotificacaoModule,
+
+    ProdutoModule,
   ],
   controllers: [AppController],
   providers: [
@@ -76,6 +80,8 @@ import { NotificacaoModule } from './modules/notificacao/notificacao.module';
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
+    UtilService,
   ],
+  exports: [UtilService],
 })
 export class AppModule {}

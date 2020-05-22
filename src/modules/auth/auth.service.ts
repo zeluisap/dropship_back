@@ -34,6 +34,7 @@ export class AuthService {
     const json = user.toJSON();
 
     return {
+      id: json._id,
       email: json.email,
       nome: json.nome,
     };

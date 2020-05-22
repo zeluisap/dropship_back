@@ -3,6 +3,8 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
 } from 'class-validator';
+import * as mappers from './util/string.mappers';
+import * as _ from 'lodash';
 
 @ValidatorConstraint({ name: 'bancoCodigoValidador', async: false })
 export class BancoCodigoValidador implements ValidatorConstraintInterface {
@@ -75,5 +77,34 @@ export class ArrayNotEmpty implements ValidatorConstraintInterface {
 
   defaultMessage(args: ValidationArguments) {
     return 'Lista está vazia!';
+  }
+}
+
+@ValidatorConstraint({ name: 'isMapper', async: false })
+export class IsMapper implements ValidatorConstraintInterface {
+  validate(mapper: string, args: ValidationArguments) {
+    if (!mapper) {
+      return false;
+    }
+
+    if (!mappers.hasOwnProperty(mapper)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    const mapperNames = _.get(args, 'value');
+    if (!(mapperNames && mapperNames.length)) {
+      return 'Este mapper não está disponível!';
+    }
+
+    const mapper = mapperNames.shift(mapperNames);
+    if (!mapper) {
+      return 'Este mapper não está disponível!';
+    }
+
+    return 'Mapper [' + mapper + '] não está disponível!';
   }
 }

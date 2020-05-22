@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NovoUsuarioInput } from './gql/types';
 import { Model } from 'mongoose';
-import { User } from './mongo';
+import { User } from './user-mongo';
 import { InjectModel } from '@nestjs/mongoose';
 import { NegocioException } from 'src/exceptions/negocio-exception';
 

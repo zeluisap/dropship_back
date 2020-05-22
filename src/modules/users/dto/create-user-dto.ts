@@ -6,6 +6,7 @@ import {
   IsInt,
   ValidateNested,
   Validate,
+  IsOptional,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -13,6 +14,7 @@ import {
   AgenciaValidador,
   ContaValidador,
   ArrayNotEmpty,
+  IsMapper,
 } from 'src/validators';
 import { TipoUsuario } from './user-dto';
 
@@ -81,6 +83,10 @@ export class MapeamentoDto {
   })
   nomeCampoNoCSV: string;
 
+  @Validate(IsMapper, {
+    each: true,
+  })
+  @IsOptional()
   mappers: string[];
 }
 
