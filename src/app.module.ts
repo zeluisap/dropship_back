@@ -12,6 +12,7 @@ import { HttpExceptionFilter } from './filter/http-exception.filter';
 import { NotificacaoModule } from './modules/notificacao/notificacao.module';
 import { ProdutoModule } from './modules/produto/produto.module';
 import { UtilService } from './util/util.service';
+import { LojaIntegradaModule } from './modules/loja-integrada/loja-integrada.module';
 
 @Module({
   imports: [
@@ -70,6 +71,8 @@ import { UtilService } from './util/util.service';
       }),
       inject: [ConfigService],
     }),
+
+    LojaIntegradaModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as XLSX from 'xlsx';
 import * as _ from 'lodash';
+import * as removeAcents from 'remove-accents';
 
 @Injectable()
 export class UtilService {
@@ -64,5 +65,9 @@ export class UtilService {
     });
 
     return planilhas;
+  }
+
+  removeAcentos(texto) {
+    return removeAcents(texto);
   }
 }

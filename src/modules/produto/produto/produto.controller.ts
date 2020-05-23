@@ -42,4 +42,10 @@ export class ProdutoController {
   async get(@Param('id') id) {
     return await this.produtoService.get(id);
   }
+
+  // @UseGuards(JwtAuthGuard)
+  @Post('atualiza/api/agenda')
+  async atualizaApiAgenda() {
+    return await this.produtoService.atualizaApiAgenda();
+  }
 }

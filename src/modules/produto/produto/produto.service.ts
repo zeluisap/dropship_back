@@ -10,6 +10,7 @@ import { validateOrReject } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { ProdutoDto } from '../dto/produto-dto';
 import { UsersService } from 'src/modules/users/users.service';
+import { LjService } from 'src/modules/loja-integrada/lj/lj-service';
 
 const StatusProduto = {
   ADICIONADO: 1,
@@ -18,12 +19,16 @@ const StatusProduto = {
 
 @Injectable()
 export class ProdutoService {
+  categorias = null;
+  marcas = null;
+
   usuario = null;
 
   constructor(
     private utilService: UtilService,
     private currentUserService: CurrentUserService,
     private userService: UsersService,
+    private ljService: LjService,
     @InjectModel('Produto') private produtoModel: Model<Produto>,
   ) {}
 
@@ -151,6 +156,9 @@ export class ProdutoService {
     }
 
     this.validarProdutos(items);
+    /**
+     * retirei o controle de sessão .. pois a versão que estou utilizando pra testar .. não disponibiliza esse recurso.
+     */
     // const session = await this.produtoModel.db.startSession();
     // session.startTransaction();
 
@@ -276,5 +284,149 @@ export class ProdutoService {
     await produto.save();
 
     return StatusProduto.ALTERADO;
+  }
+
+  async atualizaApiAgenda() {
+    const pendentes = await this.produtoModel
+      .find({
+        lojaIntegradaImportado: false,
+      })
+      .populate('parceiro', 'nome prefixoSku');
+
+    if (_.isEmpty(pendentes)) {
+      return 'Nenhum produto disponível para atualização.';
+    }
+
+    this.categorias = await this.ljService.listarCategorias();
+    this.marcas = await this.ljService.listarMarcas();
+
+    let adicionado = 0;
+    let alterado = 0;
+    let erro = 0;
+
+    for (const pendente of pendentes) {
+      if (!pendente) {
+        continue;
+      }
+
+      try {
+        const novo = await this.atualizaApiAgendaProduto(pendente);
+        await this.atualizaApiAgendaPrecoEstoque(pendente);
+
+        if (novo) {
+          adicionado++;
+        } else {
+          alterado++;
+        }
+      } catch (error) {
+        erro++;
+      }
+    }
+
+    return (
+      'Adicionado(s): ' +
+      adicionado +
+      ', alterado(s): ' +
+      alterado +
+      ', erro(s): ' +
+      erro +
+      '.'
+    );
+  }
+
+  async atualizaApiAgendaProduto(produto) {
+    if (!produto) {
+      return null;
+    }
+
+    const categoria = await this.atualizaCategoria(produto);
+    const marca = await this.atualizaMarca(produto);
+
+    let produtoJson = produto.toJSON();
+
+    produtoJson = { ...produtoJson, categoria, marca };
+
+    const ljId = _.get(produto, 'lojaIntegradaId');
+    if (!_.isEmpty(ljId)) {
+      /**
+       * código retirado pois para atualizar ... é necessário enviar o objeto inteiro, da mesma
+       * forma q é utilizado quando no novo cadastro
+       * só queria atualizar o campo "ativo" .. quando o produto já existisse na api
+       */
+
+      // return this.ljService.atualizaProduto(produtoJson);
+      return null;
+    }
+
+    const ljProduto = await this.ljService.novoProduto(produtoJson);
+    if (!ljProduto) {
+      return null;
+    }
+
+    const ljProdutoId = _.get(ljProduto, 'id');
+    if (!ljProdutoId) {
+      return null;
+    }
+
+    produto.set({
+      lojaIntegradaId: ljProdutoId,
+    });
+
+    await produto.save();
+
+    return true;
+  }
+
+  async atualizaApiAgendaPrecoEstoque(produto) {
+    if (!produto) {
+      return null;
+    }
+
+    await this.ljService.atualizaPreco(produto);
+    await this.ljService.atualizaEstoque(produto);
+
+    produto.set({
+      lojaIntegradaImportado: true,
+    });
+
+    await produto.save();
+  }
+
+  async atualizaCategoria(produto) {
+    const prodNome = _.get(produto, 'categoria');
+    if (!prodNome) {
+      return null;
+    }
+
+    // primeiro cadastra categoria
+    const categoria = this.categorias.find(cat => {
+      const catNome = _.get(cat, 'nome');
+      return catNome.toLowerCase() === prodNome.toLowerCase();
+    });
+
+    if (categoria) {
+      return categoria;
+    }
+
+    return await this.ljService.novaCategoria(prodNome);
+  }
+
+  async atualizaMarca(produto) {
+    const prodNome = _.get(produto, 'marca');
+    if (!prodNome) {
+      return null;
+    }
+
+    // primeiro cadastra categoria
+    const marca = this.marcas.find(marc => {
+      const marcNome = _.get(marc, 'nome');
+      return marcNome.toLowerCase() === prodNome.toLowerCase();
+    });
+
+    if (marca) {
+      return marca;
+    }
+
+    return await this.ljService.novaMarca(prodNome);
   }
 }
