@@ -7,12 +7,6 @@ import {
 } from 'class-validator';
 
 export class ProdutoDto {
-  @IsNumber(
-    {},
-    {
-      message: 'Campo id inválido, somente números!',
-    },
-  )
   @IsOptional()
   id: Number;
 

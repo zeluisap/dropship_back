@@ -69,7 +69,7 @@ export const getProdutoSchema = function() {
 
     if (user.get('ativo') === undefined) {
       user.set({
-        ativo: false,
+        ativo: true,
       });
     }
 

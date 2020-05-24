@@ -43,6 +43,7 @@ export class LjService {
     }
 
     return await this.http.post('/marca', {
+      ativo: true,
       id_externo: null,
       nome: marca,
       apelido: this.util
@@ -58,6 +59,7 @@ export class LjService {
       return null;
     }
 
+    const ativo = _.get(produto, 'ativo');
     const prefixoSku = _.get(produto, 'parceiro.prefixoSku');
     const origemId = _.get(produto, 'origemId');
     if (!(prefixoSku || origemId)) {
@@ -67,9 +69,9 @@ export class LjService {
     const sku = prefixoSku + '-' + origemId;
 
     const ljProduto = await this.getProdutoPorSku(sku);
-    if (ljProduto) {
-      return ljProduto;
-    }
+    // if (ljProduto) {
+    //   return ljProduto;
+    // }
 
     const nome = _.get(produto, 'nome');
     const descricao_completa = _.get(produto, 'descricaoCompleta');
@@ -78,7 +80,7 @@ export class LjService {
       sku,
       nome,
       descricao_completa,
-      ativo: false,
+      ativo,
       destaque: false,
       tipo: 'normal',
       usado: false,
@@ -93,6 +95,16 @@ export class LjService {
     const marca = _.get(produto, 'marca.resource_uri');
     if (marca) {
       params['marca'] = marca;
+    }
+
+    if (ljProduto) {
+      const ljProdutoId = _.get(ljProduto, 'id');
+      if (ljProdutoId) {
+        /**
+         * produto já existe
+         */
+        return await this.http.put('/produto/' + ljProdutoId, params);
+      }
     }
 
     return await this.http.post('/produto', params);

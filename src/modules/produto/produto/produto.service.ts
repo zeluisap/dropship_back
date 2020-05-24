@@ -110,6 +110,7 @@ export class ProdutoService {
         mapeados.percentual_lucro = percentualLucro;
         mapeados.preco_cheio =
           precoCheio + (precoCheio * percentualLucro) / 100;
+        mapeados.preco_promocional = mapeados.preco_cheio;
       }
     }
 
@@ -155,7 +156,7 @@ export class ProdutoService {
       }
     }
 
-    this.validarProdutos(items);
+    await this.validarProdutos(items);
     /**
      * retirei o controle de sessão .. pois a versão que estou utilizando pra testar .. não disponibiliza esse recurso.
      */
@@ -276,6 +277,8 @@ export class ProdutoService {
       precoCusto: item.preco_custo,
       precoPromocional: item.preco_promocional,
       lojaIntegradaImportado: false,
+      categoria: item.categoria,
+      ativo: true,
     });
 
     // await produto.save({
@@ -346,6 +349,7 @@ export class ProdutoService {
 
     produtoJson = { ...produtoJson, categoria, marca };
 
+    let novo = true;
     const ljId = _.get(produto, 'lojaIntegradaId');
     if (!_.isEmpty(ljId)) {
       /**
@@ -355,7 +359,8 @@ export class ProdutoService {
        */
 
       // return this.ljService.atualizaProduto(produtoJson);
-      return null;
+      // return null;
+      novo = false;
     }
 
     const ljProduto = await this.ljService.novoProduto(produtoJson);
@@ -374,7 +379,7 @@ export class ProdutoService {
 
     await produto.save();
 
-    return true;
+    return novo;
   }
 
   async atualizaApiAgendaPrecoEstoque(produto) {
