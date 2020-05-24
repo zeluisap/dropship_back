@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import * as session from 'express-session';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpExceptionFilter } from './filter/http-exception.filter';
+const MongoStore = require('connect-mongo')(session);
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +12,7 @@ async function bootstrap() {
 
   app.use(
     session({
+      store: new MongoStore({ url: configService.get('MONGODB_URI_SESSION') }),
       secret: 'CHANGEME',
       resave: false,
       saveUninitialized: false,
