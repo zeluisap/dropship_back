@@ -11,7 +11,10 @@ import { CurrentUserService } from './current-user/current-user.service';
 @Module({
   imports: [
     UsersModule,
-    PassportModule,
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+      session: true,
+    }),
     JwtModule.register({
       secret: jwtConstants.secret,
       // signOptions: {

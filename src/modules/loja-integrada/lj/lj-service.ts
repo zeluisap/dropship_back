@@ -3,6 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import * as _ from 'lodash';
 import { LjHttpService } from '../lj-http/lj-http.service';
 import { UtilService } from 'src/util/util.service';
+import { LjHook } from '../lj-mongo';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class LjService {
@@ -10,6 +13,7 @@ export class LjService {
     private config: ConfigService,
     private http: LjHttpService,
     private util: UtilService,
+    @InjectModel('LjHook') private ljHookModel: Model<LjHook>,
   ) {}
 
   async listarCategorias() {
@@ -157,5 +161,11 @@ export class LjService {
     };
 
     await this.http.put('/produto_estoque/' + ljProdutoId, params);
+  }
+
+  async hook(json) {
+    const hook = new this.ljHookModel();
+    hook.set(json);
+    return hook.save();
   }
 }

@@ -23,5 +23,6 @@ import { LojaIntegradaModule } from '../loja-integrada/loja-integrada.module';
   ],
   controllers: [ProdutoController],
   providers: [ProdutoService, MongooseModule],
+  exports: [ProdutoService],
 })
 export class ProdutoModule {}
