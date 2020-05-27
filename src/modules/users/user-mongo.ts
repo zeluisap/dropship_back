@@ -1,15 +1,19 @@
 import { Document, Schema } from 'mongoose';
-import { TipoUsuario } from './dto/user-dto';
+import { TipoUsuario, TipoLucro } from './dto/user-dto';
 
 export interface User extends Document {
   readonly email: string;
   readonly nome: string;
   admin: boolean;
   ativo: boolean;
+  autorizado: boolean;
   senha: string;
   tipo: string;
   prefixoSku: string;
-  percentualLucro: number;
+  lucro: {
+    tipo: string;
+    valor: number;
+  };
   informacaoBancaria: {
     banco: {
       codigo: string;
@@ -45,9 +49,13 @@ export const UserSchema = new Schema({
   nome: String,
   senha: String,
   ativo: Boolean,
+  autorizado: Boolean,
   tipo: String,
   prefixoSku: String,
-  percentualLucro: Number,
+  lucro: {
+    tipo: String,
+    valor: Number,
+  },
   informacaoBancaria: {
     banco: {
       codigo: String,
@@ -96,6 +104,12 @@ export const getUserSchema = function() {
         ativo: false,
       });
     }
+
+    if (user.get('autorizado') === undefined) {
+      user.set({
+        autorizado: false,
+      });
+    }
   });
 
   schema.set('toJSON', {
@@ -106,12 +120,13 @@ export const getUserSchema = function() {
         nome: ret.nome,
         tipo: ret.tipo,
         prefixoSku: ret.prefixoSku,
-        percentualLucro: ret.percentualLucro,
+        lucro: ret.lucro,
         informacaoBancaria: ret.informacaoBancaria,
         prazoFormaPagamento: ret.prazoFormaPagamento,
         mapeamento: ret.mapeamento,
         admin: doc.admin,
         ativo: ret.ativo,
+        autorizado: ret.autorizado,
       };
     },
   });

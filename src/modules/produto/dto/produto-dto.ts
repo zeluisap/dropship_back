@@ -4,19 +4,20 @@ import {
   IsNumberString,
   IsNumber,
   IsOptional,
+  ValidateNested,
+  IsEnum,
 } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { LucroDto } from 'src/modules/users/dto/user-dto';
 
-export class ProdutoDto {
-  @IsOptional()
-  id: Number;
-
+export class CreateProdutoDto {
   @IsNumberString(
     {},
     {
-      message: 'Campo origem_id inválido!',
+      message: 'Campo origemId inválido!',
     },
   )
-  origem_id: Number;
+  origemId: Number;
 
   @IsNotEmpty({
     message: 'Campo nome obrigatório!',
@@ -24,9 +25,9 @@ export class ProdutoDto {
   nome: String;
 
   @IsNotEmpty({
-    message: 'Campo descricao_completa obrigatório!',
+    message: 'Campo descricaoCompleta obrigatório!',
   })
-  descricao_completa: String;
+  descricaoCompleta: String;
 
   @IsNotEmpty({
     message: 'Campo categoria obrigatório!',
@@ -49,40 +50,109 @@ export class ProdutoDto {
   @IsNumber(
     {},
     {
-      message: 'Campo preco_cheio inválido, somente números!',
+      message: 'Campo precoCheio inválido, somente números!',
     },
   )
-  preco_cheio: Number;
+  precoCheio: Number;
 
   @IsNumber(
     {},
     {
-      message: 'Campo preco_custo inválido, somente números!',
+      message: 'Campo precoCusto inválido, somente números!',
     },
   )
-  preco_custo: Number;
+  precoCusto: Number;
 
   @IsNumber(
     {},
     {
-      message: 'Campo preco_promocional inválido, somente números!',
+      message: 'Campo precoPromocional inválido, somente números!',
     },
   )
-  preco_promocional: Number;
+  precoPromocional: Number;
+
+  @ValidateNested({
+    message: 'Campo lucro não informado.',
+  })
+  @Type(() => LucroDto)
+  @IsOptional()
+  lucro: LucroDto;
+}
+
+export class EditarProdutoDto {
+  @IsNumberString(
+    {},
+    {
+      message: 'Campo origemId inválido!',
+    },
+  )
+  @IsOptional()
+  origemId: Number;
+
+  @IsNotEmpty({
+    message: 'Campo nome obrigatório!',
+  })
+  @IsOptional()
+  nome: String;
+
+  @IsNotEmpty({
+    message: 'Campo descricaoCompleta obrigatório!',
+  })
+  @IsOptional()
+  descricaoCompleta: String;
+
+  @IsNotEmpty({
+    message: 'Campo categoria obrigatório!',
+  })
+  @IsOptional()
+  categoria: String;
+
+  @IsNotEmpty({
+    message: 'Campo marca obrigatório!',
+  })
+  @IsOptional()
+  marca: String;
 
   @IsNumber(
     {},
     {
-      message: 'Campo preco_cheio_original inválido, somente números!',
+      message: 'Campo quantidade inválido, somente números!',
     },
   )
-  preco_cheio_original: Number;
+  @IsOptional()
+  quantidade: Number;
 
   @IsNumber(
     {},
     {
-      message: 'Campo percentual_lucro inválido, somente números!',
+      message: 'Campo precoCheio inválido, somente números!',
     },
   )
-  percentual_lucro: Number;
+  @IsOptional()
+  precoCheio: Number;
+
+  @IsNumber(
+    {},
+    {
+      message: 'Campo precoCusto inválido, somente números!',
+    },
+  )
+  @IsOptional()
+  precoCusto: Number;
+
+  @IsNumber(
+    {},
+    {
+      message: 'Campo precoPromocional inválido, somente números!',
+    },
+  )
+  @IsOptional()
+  precoPromocional: Number;
+
+  @ValidateNested({
+    message: 'Campo lucro não informado.',
+  })
+  @Type(() => LucroDto)
+  @IsOptional()
+  lucro: LucroDto;
 }

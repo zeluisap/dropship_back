@@ -6,6 +6,7 @@ import { UserResolver } from './gql/user.resolver';
 import { AuthModule } from '../auth/auth.module';
 import { NotificacaoModule } from '../notificacao/notificacao.module';
 import { UserController } from './user.controller';
+import { AppModule } from 'src/app.module';
 
 @Module({
   imports: [

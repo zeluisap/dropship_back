@@ -12,7 +12,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { ProdutoService } from './produto.service';
-import { ProdutoDto } from '../dto/produto-dto';
+import { CreateProdutoDto, EditarProdutoDto } from '../dto/produto-dto';
 
 @Controller('produto')
 export class ProdutoController {
@@ -31,10 +31,28 @@ export class ProdutoController {
   @UseGuards(JwtAuthGuard)
   @Post('importar/confirma')
   async importarConfirma(
-    @Body() items: ProdutoDto[],
+    @Body() items: CreateProdutoDto[],
     @Query('parceiro_id') parceiro_id: string,
   ) {
     return this.produtoService.importarConfirma(items, parceiro_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('')
+  async listar(@Query() options) {
+    return await this.produtoService.listar(options);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('')
+  async novo(@Body() dto: CreateProdutoDto) {
+    return await this.produtoService.novo(dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id')
+  async editar(@Param('id') id, @Body() dto: EditarProdutoDto) {
+    return await this.produtoService.editar(id, dto);
   }
 
   @UseGuards(JwtAuthGuard)

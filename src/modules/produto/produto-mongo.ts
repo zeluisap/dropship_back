@@ -1,4 +1,5 @@
 import { Document, Schema } from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 export interface Produto extends Document {
   readonly origemId: string;
@@ -26,6 +27,11 @@ export interface Produto extends Document {
   parceiro: {
     id: string;
     nome: string;
+  };
+
+  lucro: {
+    tipo: string;
+    valor: number;
   };
 }
 
@@ -56,6 +62,11 @@ export const ProdutoSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User',
   },
+
+  lucro: {
+    tipo: String,
+    valor: Number,
+  },
 });
 
 export const getProdutoSchema = function() {
@@ -85,6 +96,8 @@ export const getProdutoSchema = function() {
       });
     }
   });
+
+  schema.plugin(mongoosePaginate);
 
   // schema.set('toJSON', {
   //   transform: function(doc, ret, options) {

@@ -11,13 +11,22 @@ import * as moment from 'moment';
 import { NotificacaoService } from '../notificacao/notificacao.service';
 import { ConfigService } from '@nestjs/config';
 import { AlterarUserDto } from './dto/alterar-user-dto';
+import {
+  AutoCadastroDto,
+  TipoUsuario,
+  ParceiroAutorizarDto,
+  EditarPerfilDto,
+} from './dto/user-dto';
+import * as _ from 'lodash';
 
 @Injectable()
 export class UsersService {
+  logado: any = null;
+
   constructor(
     @InjectModel('User') private userModel: Model<User>,
     private notificacaoService: NotificacaoService,
-    private configService: ConfigService,
+    private configService: ConfigService, // private currentUserService: CurrentUserService,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -53,10 +62,13 @@ export class UsersService {
       );
     }
 
-    const user = new this.userModel(dados);
+    const user = new this.userModel({
+      ...dados,
+      autorizado: true,
+    });
+
     await this.geraHashCriacao(user);
     const result = await user.save();
-
     this.notificaCriacao(user);
 
     return result;
@@ -298,5 +310,103 @@ export class UsersService {
 
     let buff = Buffer.from(JSON.stringify(dto), 'utf-8');
     return buff.toString('base64');
+  }
+
+  async parceiroAutoCadastro(dto: AutoCadastroDto) {
+    const parceiro = await this.userModel.findOne({
+      email: dto.email,
+    });
+
+    if (parceiro) {
+      throw new NegocioException(
+        'Já existe um usuário com o e-mail informado!',
+      );
+    }
+
+    const user = new this.userModel({
+      ...dto,
+      tipo: TipoUsuario.PARCEIRO,
+    });
+
+    await this.geraHashCriacao(user);
+
+    const result = await user.save();
+
+    this.notificaCriacao(user);
+
+    return result;
+  }
+
+  async parceiroAutorizar(id, dto: ParceiroAutorizarDto) {
+    if (!id) {
+      throw new NegocioException('Falha, nenhum usuário informado!');
+    }
+
+    const user = await this.userModel.findOne({
+      _id: id,
+    });
+
+    if (!user) {
+      throw new NegocioException('Falha, usuário não localizado!');
+    }
+
+    if (user.autorizado) {
+      throw new NegocioException('Falha, usuário já autorizado!');
+    }
+
+    user.set({
+      ...dto,
+      autorizado: true,
+    });
+
+    return await user.save();
+  }
+
+  async editarPerfil(dto: EditarPerfilDto) {
+    const user = this.logado;
+
+    if (!user) {
+      throw new NegocioException('Falha, nenhum usuário logado!');
+    }
+
+    if (!user.ativo) {
+      throw new NegocioException('Falha, usuário inativo!');
+    }
+
+    user.set(dto);
+
+    return await user.save();
+  }
+
+  async setLogado(payload) {
+    if (!payload) {
+      this.logado = null;
+      return;
+    }
+
+    const id = _.get(payload, 'id');
+    if (!id) {
+      this.logado = null;
+      return;
+    }
+
+    const user = await this.userModel.findOne({
+      _id: id,
+    });
+
+    if (!user) {
+      this.logado = null;
+      return;
+    }
+
+    this.logado = user;
+  }
+
+  getLogado() {
+    return this.logado;
+  }
+
+  isLogadoAdmin() {
+    return _.get(this.logado, 'admin');
   }
 }

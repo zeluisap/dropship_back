@@ -2,10 +2,14 @@ import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './modules/auth/auth.service';
 import { LocalAuthGuard } from './modules/auth/guards/local-auth.guard';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { UsersService } from './modules/users/users.service';
 
 @Controller()
 export class AppController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private userService: UsersService,
+  ) {}
 
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
@@ -25,6 +29,7 @@ export class AppController {
   @Post('auth/logout')
   async logout(@Request() req) {
     req.session.token = null;
+    this.userService.setLogado(null);
     return true;
   }
 }

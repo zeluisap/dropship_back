@@ -17,7 +17,7 @@ import {
   ContaValidador,
   ArrayNotEmpty,
 } from 'src/validators';
-import { TipoUsuario } from './user-dto';
+import { TipoUsuario, LucroDto } from './user-dto';
 import { MapeamentoDto } from './create-user-dto';
 
 export class AlterarBancoDto {
@@ -94,18 +94,12 @@ export class AlterarUserDto {
   @IsOptional()
   prefixoSku: string;
 
-  @IsCurrency(
-    {
-      allow_decimal: true,
-      allow_negatives: false,
-      digits_after_decimal: [1],
-    },
-    {
-      message: 'Campo percentual de lucro inválido.',
-    },
-  )
+  @ValidateNested({
+    message: 'Campo lucro não pode ser vazio.',
+  })
+  @Type(() => LucroDto)
   @IsOptional()
-  percentualLucro: number;
+  lucro: LucroDto;
 
   @ValidateNested({
     message: 'Campo Informação Bancária não pode ser vazio.',

@@ -1,7 +1,12 @@
-import { Injectable, Scope, Inject, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  Scope,
+  Inject,
+  Optional,
+  forwardRef,
+} from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import * as _ from 'lodash';
-import { AuthService } from '../auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/modules/users/users.service';
 
@@ -12,8 +17,8 @@ export class CurrentUserService {
   constructor(
     @Optional() @Inject(REQUEST) private request,
     private jwt: JwtService,
-    private userService: UsersService,
-  ) {}
+  ) // @Inject(forwardRef(() => UsersService)) private userService: UsersService,
+  {}
 
   async getUsuarioLogado() {
     const token = _.get(this.request, 'session.token');
@@ -26,10 +31,12 @@ export class CurrentUserService {
       return null;
     }
 
-    const _id = _.get(user, 'id');
+    return user;
 
-    return await this.userService.findOne({
-      _id,
-    });
+    // const _id = _.get(user, 'id');
+
+    // return await this.userService.findOne({
+    //   _id,
+    // });
   }
 }

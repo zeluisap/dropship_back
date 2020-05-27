@@ -5,12 +5,13 @@ import * as mappers from '../../../util/string.mappers';
 import { CurrentUserService } from 'src/modules/auth/current-user/current-user.service';
 import { Produto } from '../produto-mongo';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { validateOrReject } from 'class-validator';
+import { Model, PaginateModel } from 'mongoose';
+import { validateOrReject, isDecimal } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { ProdutoDto } from '../dto/produto-dto';
+import { CreateProdutoDto, EditarProdutoDto } from '../dto/produto-dto';
 import { UsersService } from 'src/modules/users/users.service';
 import { LjService } from 'src/modules/loja-integrada/lj/lj-service';
+import { NegocioException } from 'src/exceptions/negocio-exception';
 
 const StatusProduto = {
   ADICIONADO: 1,
@@ -29,7 +30,7 @@ export class ProdutoService {
     private currentUserService: CurrentUserService,
     private userService: UsersService,
     private ljService: LjService,
-    @InjectModel('Produto') private produtoModel: Model<Produto>,
+    @InjectModel('Produto') private produtoModel: PaginateModel<Produto>,
   ) {}
 
   async get(id) {
@@ -50,9 +51,9 @@ export class ProdutoService {
       usuario = await this.userService.findOne({
         _id: parceiroId,
       });
-      if (!usuario) {
-        usuario = await this.currentUserService.getUsuarioLogado();
-      }
+    }
+    if (!usuario) {
+      usuario = await this.userService.getLogado();
     }
 
     const planilhas = this.utilService.dadosPorUploadedArquivo(arquivo);
@@ -97,28 +98,42 @@ export class ProdutoService {
 
     const mapeados: any = {};
 
-    mapeamento.forEach(map => {
+    for (const map of mapeamento) {
       const valorOriginal = _.get(linha, map.nomeCampoNoCSV);
       mapeados[map.nomeCampoNaAPI] = this.runMappers(map, valorOriginal);
-    });
-
-    let precoCheio = _.get(mapeados, 'preco_cheio');
-    if (precoCheio) {
-      const percentualLucro = _.get(usuario, 'percentualLucro');
-      if (percentualLucro) {
-        mapeados.preco_cheio_original = precoCheio;
-        mapeados.percentual_lucro = percentualLucro;
-        mapeados.preco_cheio =
-          precoCheio + (precoCheio * percentualLucro) / 100;
-        mapeados.preco_promocional = mapeados.preco_cheio;
-      }
     }
 
+    let precoCheio = _.get(mapeados, 'precoCheio');
+    if (!precoCheio) {
+      precoCheio = 0;
+    }
+
+    // const percentualLucro = _.get(usuario, 'percentualLucro');
+    // if (percentualLucro) {
+    //   mapeados.lucro = {
+    //     tipo: TipoLucro.PERCENTUAL,
+    //     valor: percentualLucro,
+    //   };
+    // }
+
+    // if (precoCheio) {
+    //   const percentualLucro = _.get(usuario, 'percentualLucro');
+    //   if (percentualLucro) {
+    //     mapeados.preco_cheio_original = precoCheio;
+    //     mapeados.percentual_lucro = percentualLucro;
+    //     mapeados.preco_cheio =
+    //       precoCheio + (precoCheio * percentualLucro) / 100;
+    //   }
+    // }
+
+    mapeados.precoCheio = precoCheio;
+    mapeados.precoPromocional = precoCheio;
+
     mapeados.id = null;
-    const origem_id = _.get(mapeados, 'origem_id');
-    if (origem_id) {
+    const origemId = _.get(mapeados, 'origemId');
+    if (origemId) {
       const produto = await this.produtoModel.findOne({
-        origemId: origem_id,
+        origemId,
       });
       if (produto) {
         mapeados.id = produto.id;
@@ -201,7 +216,7 @@ export class ProdutoService {
     const errors = [];
     for (const item of items) {
       try {
-        const obj = plainToClass(ProdutoDto, item);
+        const obj = plainToClass(CreateProdutoDto, item);
         await validateOrReject(obj);
       } catch (error) {
         errors.push(error);
@@ -220,7 +235,7 @@ export class ProdutoService {
   // async salvarProduto(item, session) {
   async salvarProduto(item, usuario) {
     let produto = await this.produtoModel.findOne({
-      origemId: item.origem_id,
+      origemId: item.origemId,
     });
     // .session(session);
 
@@ -243,18 +258,8 @@ export class ProdutoService {
     produto = new this.produtoModel();
 
     produto.set({
-      origemId: item.origem_id,
-      nome: item.nome,
-      descricaoCompleta: item.descricao_completa,
-      categoria: item.categoria,
-      marca: item.marca,
-
-      quantidade: item.quantidade,
-      precoCheio: item.preco_cheio,
-      precoCusto: item.preco_custo,
-      precoPromocional: item.preco_promocional,
+      ...item,
       lojaIntegradaImportado: false,
-
       parceiro: usuario._id,
     });
 
@@ -271,15 +276,29 @@ export class ProdutoService {
       return null;
     }
 
-    produto.set({
-      quantidade: item.quantidade,
-      precoCheio: item.preco_cheio,
-      precoCusto: item.preco_custo,
-      precoPromocional: item.preco_promocional,
+    const campos = [
+      'quantidade',
+      'precoCheio',
+      'precoCusto',
+      'precoPromocional',
+      'categoria',
+      'lucro',
+      'ativo',
+    ];
+
+    const dto = {
       lojaIntegradaImportado: false,
-      categoria: item.categoria,
-      ativo: true,
-    });
+    };
+
+    for (const campo of campos) {
+      if (_.isUndefined(item[campo])) {
+        continue;
+      }
+
+      dto[campo] = _.get(item, campo);
+    }
+
+    produto.set(dto);
 
     // await produto.save({
     //   session,
@@ -293,8 +312,9 @@ export class ProdutoService {
     const pendentes = await this.produtoModel
       .find({
         lojaIntegradaImportado: false,
+        'parceiro.autorizado': true,
       })
-      .populate('parceiro', 'nome prefixoSku');
+      .populate('parceiro', 'nome prefixoSku autorizado');
 
     if (_.isEmpty(pendentes)) {
       return 'Nenhum produto disponível para atualização.';
@@ -433,5 +453,86 @@ export class ProdutoService {
     }
 
     return await this.ljService.novaMarca(prodNome);
+  }
+
+  async listar(options) {
+    const filtros: any = {};
+    const nome = _.get(options, 'nome');
+    if (nome) {
+      filtros['nome'] = { $regex: '.*' + nome + '.*', $options: 'i' };
+    }
+
+    if (this.userService.isLogadoAdmin()) {
+      const parceiro_id = _.get(options, 'parceiro_id');
+      if (parceiro_id) {
+        filtros['parceiro._id'] = parceiro_id;
+      }
+    }
+
+    return await this.produtoModel.paginate(filtros, options);
+  }
+
+  async novo(dto: CreateProdutoDto) {
+    const usuario = this.userService.getLogado();
+
+    const origemId = _.get(dto, 'origemId');
+
+    const produto = await this.produtoModel.findOne({
+      origemId,
+    });
+    if (produto) {
+      throw new NegocioException(
+        'Falha, Existe outro produto com o mesmo origemId.',
+      );
+    }
+
+    await this.salvarProdutoNovo(null, dto, usuario);
+
+    return await this.produtoModel
+      .findOne({
+        origemId,
+      })
+      .populate('parceiro', 'email nome');
+  }
+
+  async editar(id, dto: EditarProdutoDto) {
+    const usuario = this.userService.getLogado();
+    const isAdmin = this.userService.isLogadoAdmin();
+    const usuario_id = usuario._id.toJSON();
+    if (!usuario_id) {
+      throw new NegocioException(
+        'Falha, não foi possível identificar o usuário logado.',
+      );
+    }
+
+    const produto = await this.produtoModel
+      .findOne({
+        _id: id,
+      })
+      .populate('parceiro', '_id nome email');
+    if (!produto) {
+      throw new NegocioException('Falha, produto não localizado.');
+    }
+
+    const parceiro_id = produto.get('parceiro._id').toJSON();
+    if (!isAdmin && usuario_id !== parceiro_id) {
+      throw new NegocioException('Falha, produto não pertence ao parceiro.');
+    }
+
+    const lucro = _.get(dto, 'lucro');
+    if (lucro && !isAdmin) {
+      throw new NegocioException(
+        'Falha, campo lucro não permitido para não administrador.',
+      );
+    }
+
+    produto.set({
+      ...dto,
+      lojaIntegradaImportado: false,
+    });
+
+    await produto.save();
+
+    return await produto.populate('parceiro', 'email nome');
   }
 }

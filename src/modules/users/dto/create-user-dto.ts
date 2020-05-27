@@ -16,7 +16,7 @@ import {
   ArrayNotEmpty,
   IsMapper,
 } from 'src/validators';
-import { TipoUsuario } from './user-dto';
+import { TipoUsuario, LucroDto } from './user-dto';
 
 export class BancoDto {
   @IsNotEmpty({
@@ -115,17 +115,14 @@ export class CreateUserDto {
   })
   prefixoSku: string;
 
-  @IsCurrency(
-    {
-      allow_decimal: true,
-      allow_negatives: false,
-      digits_after_decimal: [1],
-    },
-    {
-      message: 'Campo percentual de lucro inválido.',
-    },
-  )
-  percentualLucro: number;
+  @IsNotEmpty({
+    message: 'Campo lucro não informado.',
+  })
+  @ValidateNested({
+    message: 'Campo lucro não informado.',
+  })
+  @Type(() => LucroDto)
+  lucro: LucroDto;
 
   @IsNotEmpty({
     message: 'Campo Informação Bancária não informado.',
