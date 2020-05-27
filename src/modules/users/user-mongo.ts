@@ -1,5 +1,6 @@
 import { Document, Schema } from 'mongoose';
 import { TipoUsuario, TipoLucro } from './dto/user-dto';
+import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 export interface User extends Document {
   readonly email: string;
@@ -130,6 +131,8 @@ export const getUserSchema = function() {
       };
     },
   });
+
+  schema.plugin(mongoosePaginate);
 
   return schema;
 };

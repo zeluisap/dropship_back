@@ -31,6 +31,7 @@ export class ProdutoService {
     private userService: UsersService,
     private ljService: LjService,
     @InjectModel('Produto') private produtoModel: PaginateModel<Produto>,
+    private util: UtilService,
   ) {}
 
   async get(id) {
@@ -469,7 +470,7 @@ export class ProdutoService {
       }
     }
 
-    return await this.produtoModel.paginate(filtros, options);
+    return await this.util.paginar(this.produtoModel, filtros, options);
   }
 
   async novo(dto: CreateProdutoDto) {

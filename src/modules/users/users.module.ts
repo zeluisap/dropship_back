@@ -10,6 +10,7 @@ import { AppModule } from 'src/app.module';
 
 @Module({
   imports: [
+    forwardRef(() => AppModule),
     forwardRef(() => NotificacaoModule),
     forwardRef(() => AuthModule),
     MongooseModule.forFeatureAsync([

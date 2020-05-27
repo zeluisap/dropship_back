@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import * as XLSX from 'xlsx';
 import * as _ from 'lodash';
 import * as removeAcents from 'remove-accents';
+import { PaginateModel } from 'mongoose';
+import { NegocioException } from 'src/exceptions/negocio-exception';
 
 @Injectable()
 export class UtilService {
@@ -69,5 +71,16 @@ export class UtilService {
 
   removeAcentos(texto) {
     return removeAcents(texto);
+  }
+
+  async paginar(model: any, filtro, options) {
+    const page = _.get(options, 'page') || 1;
+    const limit = _.get(options, 'limit') || 20;
+
+    if (limit < 1 || limit > 50) {
+      throw new NegocioException('O valor do limit deve estar entre 1 e 50.');
+    }
+
+    return await model.paginate(filtro, { page, limit });
   }
 }

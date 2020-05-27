@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { NovoUsuarioInput } from './gql/types';
-import { Model } from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import { User } from './user-mongo';
 import { InjectModel } from '@nestjs/mongoose';
 import { NegocioException } from 'src/exceptions/negocio-exception';
@@ -18,15 +18,17 @@ import {
   EditarPerfilDto,
 } from './dto/user-dto';
 import * as _ from 'lodash';
+import { UtilService } from 'src/util/util.service';
 
 @Injectable()
 export class UsersService {
   logado: any = null;
 
   constructor(
-    @InjectModel('User') private userModel: Model<User>,
+    @InjectModel('User') private userModel: PaginateModel<User>,
     private notificacaoService: NotificacaoService,
     private configService: ConfigService, // private currentUserService: CurrentUserService,
+    private util: UtilService,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -408,5 +410,26 @@ export class UsersService {
 
   isLogadoAdmin() {
     return _.get(this.logado, 'admin');
+  }
+
+  async listar(options) {
+    const filtros: any = {};
+    const nome = _.get(options, 'nome');
+    const ativo = _.get(options, 'ativo');
+    const autorizado = _.get(options, 'autorizado');
+
+    if (nome) {
+      filtros['nome'] = { $regex: '.*' + nome + '.*', $options: 'i' };
+    }
+
+    if (ativo) {
+      filtros['ativo'] = ativo;
+    }
+
+    if (autorizado) {
+      filtros['autorizado'] = autorizado;
+    }
+
+    return await this.util.paginar(this.userModel, filtros, options);
   }
 }

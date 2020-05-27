@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   Get,
+  Query,
 } from '@nestjs/common';
 import {
   AtivarUserDto,
@@ -25,13 +26,13 @@ export class UserController {
   constructor(private usersService: UsersService) {}
 
   @UseGuards(AdminAuthGuard)
-  @Post('adicionar')
+  @Post('')
   async adicionar(@Body() userDto: CreateUserDto) {
     return await this.usersService.novo(userDto);
   }
 
   @UseGuards(AdminAuthGuard)
-  @Post('alterar/:id')
+  @Post(':id')
   async alterar(@Param('id') id, @Body() userDto: AlterarUserDto) {
     return await this.usersService.alterar(id, userDto);
   }
@@ -50,8 +51,8 @@ export class UserController {
 
   @UseGuards(AdminAuthGuard)
   @Get('')
-  async get() {
-    return await this.usersService.findAll();
+  async get(@Query() options) {
+    return await this.usersService.listar(options);
   }
 
   @Post('ativar')
