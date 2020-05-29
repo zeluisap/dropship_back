@@ -24,10 +24,7 @@ export interface Produto extends Document {
 
   ativo: boolean;
 
-  parceiro: {
-    id: string;
-    nome: string;
-  };
+  parceiro: any;
 
   lucro: {
     tipo: string;

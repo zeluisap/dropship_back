@@ -432,4 +432,14 @@ export class UsersService {
 
     return await this.util.paginar(this.userModel, filtros, options);
   }
+
+  async getPorId(id) {
+    if (!id) {
+      return null;
+    }
+
+    return await this.userModel.findOne({
+      _id: id,
+    });
+  }
 }

@@ -38,6 +38,12 @@ export class UserController {
   }
 
   @UseGuards(AdminAuthGuard)
+  @Get(':id')
+  async getPorId(@Param('id') id) {
+    return await this.usersService.getPorId(id);
+  }
+
+  @UseGuards(AdminAuthGuard)
   @Post('parceiro/autorizar/:id')
   async parceiroAutorizar(@Param('id') id, @Body() dto: ParceiroAutorizarDto) {
     return await this.usersService.parceiroAutorizar(id, dto);

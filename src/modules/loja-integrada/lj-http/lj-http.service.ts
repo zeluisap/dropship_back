@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 export class LjHttpService {
   constructor(private config: ConfigService, private http: HttpService) {}
 
-  async listarTodos(url) {
+  async listarTodos(url, params = {}) {
     const limit = 20;
     let offset = 0;
     let total = 0;
@@ -15,9 +15,11 @@ export class LjHttpService {
     let items = [];
 
     do {
-      const response = await this.get(
-        url + '?limit=' + limit + '&offset=' + offset,
-      );
+      const response = await this.get(url, {
+        ...params,
+        limit,
+        offset,
+      });
 
       if (!total) {
         total = _.get(response, 'meta.total_count');

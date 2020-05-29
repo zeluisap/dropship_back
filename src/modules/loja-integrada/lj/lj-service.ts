@@ -1,6 +1,7 @@
 import { Injectable, HttpService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 import { LjHttpService } from '../lj-http/lj-http.service';
 import { UtilService } from 'src/util/util.service';
 import { LjHook } from '../lj-mongo';
@@ -179,5 +180,36 @@ export class LjService {
     const hook = new this.ljHookModel();
     hook.set(json);
     return hook.save();
+  }
+
+  async pedidos24Horas() {
+    const since_atualizado = moment()
+      .subtract(10, 'days')
+      .format('YYYY-MM-DD');
+
+    const pedidos = await this.http.listarTodos('/pedido/search', {
+      since_atualizado,
+    });
+
+    if (_.isEmpty(pedidos)) {
+      return null;
+    }
+
+    const retorno = [];
+    for (const pedido of pedidos) {
+      const numero = _.get(pedido, 'numero');
+      if (!numero) {
+        continue;
+      }
+
+      const detalhe = await this.http.get('/pedido/' + numero);
+      if (!detalhe) {
+        continue;
+      }
+
+      retorno.push(detalhe);
+    }
+
+    return retorno;
   }
 }

@@ -13,6 +13,7 @@ import { NotificacaoModule } from './modules/notificacao/notificacao.module';
 import { ProdutoModule } from './modules/produto/produto.module';
 import { UtilService } from './util/util.service';
 import { LojaIntegradaModule } from './modules/loja-integrada/loja-integrada.module';
+import { PedidoModule } from './modules/pedido/pedido.module';
 
 @Module({
   imports: [
@@ -73,6 +74,8 @@ import { LojaIntegradaModule } from './modules/loja-integrada/loja-integrada.mod
     }),
 
     LojaIntegradaModule,
+
+    PedidoModule,
   ],
   controllers: [AppController],
   providers: [
