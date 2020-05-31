@@ -31,10 +31,25 @@ export class UserController {
     return await this.usersService.novo(userDto);
   }
 
+  @Post('ativar')
+  async ativar(@Body() userDto: AtivarUserDto) {
+    return await this.usersService.ativar(
+      userDto.hash,
+      userDto.email,
+      userDto.senha,
+    );
+  }
+
   @UseGuards(AdminAuthGuard)
   @Post(':id')
   async alterar(@Param('id') id, @Body() userDto: AlterarUserDto) {
     return await this.usersService.alterar(id, userDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('logado')
+  async getLogado() {
+    return this.usersService.getLogado();
   }
 
   @UseGuards(AdminAuthGuard)
@@ -49,25 +64,10 @@ export class UserController {
     return await this.usersService.parceiroAutorizar(id, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('logado')
-  async getLogado() {
-    return this.usersService.getLogado();
-  }
-
   @UseGuards(AdminAuthGuard)
   @Get('')
   async get(@Query() options) {
     return await this.usersService.listar(options);
-  }
-
-  @Post('ativar')
-  async ativar(@Body() userDto: AtivarUserDto) {
-    return await this.usersService.ativar(
-      userDto.hash,
-      userDto.email,
-      userDto.senha,
-    );
   }
 
   @Post('redefinir')

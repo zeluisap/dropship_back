@@ -3,10 +3,24 @@ import * as mongoosePaginate from 'mongoose-paginate-v2';
 
 export interface Pedido extends Document {
   numero: number;
+
   cliente: {
     nome: string;
+    email: string;
+    cpfCnpj: string;
   };
-  pagamentos: [{}];
+
+  pagamentos: [
+    {
+      formaPagamento: {
+        codigo: string;
+        nome: string;
+      };
+      valor: number;
+      valorPago: number;
+    },
+  ];
+
   itens: [
     {
       produto: any;
@@ -17,6 +31,7 @@ export interface Pedido extends Document {
       precoVenda: number;
     },
   ];
+
   situacao: {
     id: number;
     codigo: string;
@@ -24,19 +39,37 @@ export interface Pedido extends Document {
 
     aprovado: boolean;
     cancelado: boolean;
-    final: boolean;
+    concluido: boolean;
     notificar_comprador: boolean;
   };
-  dataCriação: Date;
+
+  parceiro: {};
+
+  dataCriacao: Date;
+  dataAlteracao: [Date];
 }
 
 export const PedidoSchema = new Schema({
   numero: Number,
+
   cliente: {
     nome: String,
+    email: String,
+    cpfCnpj: String,
   },
-  pagamentos: [{}],
-  items: [
+
+  pagamentos: [
+    {
+      formaPagamento: {
+        codigo: String,
+        nome: String,
+      },
+      valor: Number,
+      valorPago: Number,
+    },
+  ],
+
+  itens: [
     {
       produto: {
         type: Schema.Types.ObjectId,
@@ -49,6 +82,7 @@ export const PedidoSchema = new Schema({
       precoVenda: Number,
     },
   ],
+
   situacao: {
     id: Number,
     codigo: String,
@@ -56,38 +90,23 @@ export const PedidoSchema = new Schema({
 
     aprovado: Boolean,
     cancelado: Boolean,
-    final: Boolean,
+    concluido: Boolean,
     notificar_comprador: Boolean,
   },
-  dataCriação: Date,
+
+  parceiro: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
+
+  dataCriacao: Date,
+  dataAlteracao: [Date],
 });
 
 export const getPedidoSchema = function() {
   const schema = PedidoSchema;
 
-  /**
-   * se não for ativo ... define ativo como false
-   */
-  schema.pre('save', function() {
-    const objeto = this;
-
-    if (objeto.get('ativo') === undefined) {
-      objeto.set({
-        ativo: true,
-      });
-    }
-  });
-
   schema.plugin(mongoosePaginate);
-
-  // schema.set('toJSON', {
-  //   transform: function(doc, ret, options) {
-  //     return {
-  //       _id: ret._id,
-  //       nome: ret.nome,
-  //     };
-  //   },
-  // });
 
   return schema;
 };

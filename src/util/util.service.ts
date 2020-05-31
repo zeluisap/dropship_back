@@ -81,6 +81,8 @@ export class UtilService {
       throw new NegocioException('O valor do limit deve estar entre 1 e 50.');
     }
 
-    return await model.paginate(filtro, { page, limit });
+    const populate = _.get(options, 'populate');
+
+    return await model.paginate(filtro, { page, limit, populate });
   }
 }

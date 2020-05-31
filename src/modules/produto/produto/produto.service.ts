@@ -536,4 +536,20 @@ export class ProdutoService {
 
     return await produto.populate('parceiro', 'email nome');
   }
+
+  async getPorLojaIntegradaId(id) {
+    if (!id) {
+      return null;
+    }
+
+    const produto = await this.produtoModel.findOne({
+      lojaIntegradaId: id,
+    });
+
+    if (!produto) {
+      return null;
+    }
+
+    return produto;
+  }
 }

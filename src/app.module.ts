@@ -14,6 +14,7 @@ import { ProdutoModule } from './modules/produto/produto.module';
 import { UtilService } from './util/util.service';
 import { LojaIntegradaModule } from './modules/loja-integrada/loja-integrada.module';
 import { PedidoModule } from './modules/pedido/pedido.module';
+import { ParametroModule } from './modules/parametro/parametro.module';
 
 @Module({
   imports: [
@@ -76,6 +77,8 @@ import { PedidoModule } from './modules/pedido/pedido.module';
     LojaIntegradaModule,
 
     PedidoModule,
+
+    ParametroModule,
   ],
   controllers: [AppController],
   providers: [
