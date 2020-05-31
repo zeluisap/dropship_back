@@ -238,6 +238,11 @@ export class PedidoService {
       filtros['parceiro'] = logado._id;
     }
 
+    options.populate = {
+      path: 'parceiro',
+      select: 'nome email',
+    };
+
     return await this.util.paginar(this.pedidoModel, filtros, options);
   }
 
