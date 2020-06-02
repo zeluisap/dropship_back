@@ -21,17 +21,6 @@ export interface Pedido extends Document {
     },
   ];
 
-  itens: [
-    {
-      produto: any;
-      quantidade: number;
-      precoCheio: number;
-      precoCusto: number;
-      precoPromocional: number;
-      precoVenda: number;
-    },
-  ];
-
   situacao: {
     id: number;
     codigo: string;
@@ -43,68 +32,81 @@ export interface Pedido extends Document {
     notificar_comprador: boolean;
   };
 
-  parceiro: {};
-
   dataCriacao: Date;
   dataAlteracao: [Date];
 }
 
-export const PedidoSchema = new Schema({
-  numero: Number,
-
-  cliente: {
-    nome: String,
-    email: String,
-    cpfCnpj: String,
-  },
-
-  pagamentos: [
-    {
-      formaPagamento: {
-        codigo: String,
-        nome: String,
-      },
-      valor: Number,
-      valorPago: Number,
-    },
-  ],
-
-  itens: [
-    {
-      produto: {
-        type: Schema.Types.ObjectId,
-        ref: 'Produto',
-      },
-      quantidade: Number,
-      precoCheio: Number,
-      precoCusto: Number,
-      precoPromocional: Number,
-      precoVenda: Number,
-    },
-  ],
-
-  situacao: {
-    id: Number,
-    codigo: String,
-    nome: String,
-
-    aprovado: Boolean,
-    cancelado: Boolean,
-    concluido: Boolean,
-    notificar_comprador: Boolean,
-  },
-
-  parceiro: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-  },
-
-  dataCriacao: Date,
-  dataAlteracao: [Date],
-});
+export interface PedidoItem extends Document {
+  pedido: {};
+  produto: {};
+  quantidade: number;
+  precoCheio: number;
+  precoCusto: number;
+  precoPromocional: number;
+  precoVenda: number;
+  retirada: Date;
+}
 
 export const getPedidoSchema = function() {
-  const schema = PedidoSchema;
+  const schema = new Schema({
+    numero: Number,
+
+    cliente: {
+      nome: String,
+      email: String,
+      cpfCnpj: String,
+    },
+
+    pagamentos: [
+      {
+        formaPagamento: {
+          codigo: String,
+          nome: String,
+        },
+        valor: Number,
+        valorPago: Number,
+      },
+    ],
+
+    situacao: {
+      id: Number,
+      codigo: String,
+      nome: String,
+
+      aprovado: Boolean,
+      cancelado: Boolean,
+      concluido: Boolean,
+      notificar_comprador: Boolean,
+    },
+
+    dataCriacao: Date,
+    dataAlteracao: [Date],
+  });
+
+  schema.plugin(mongoosePaginate);
+
+  return schema;
+};
+
+export const getPedidoItemSchema = function() {
+  const schema = new Schema({
+    pedido: {
+      type: Schema.Types.ObjectId,
+      ref: 'Pedido',
+    },
+
+    produto: {
+      type: Schema.Types.ObjectId,
+      ref: 'Produto',
+    },
+
+    quantidade: Number,
+    precoCheio: Number,
+    precoCusto: Number,
+    precoPromocional: Number,
+    precoVenda: Number,
+    retirada: Date,
+  });
 
   schema.plugin(mongoosePaginate);
 

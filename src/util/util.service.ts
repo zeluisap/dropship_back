@@ -85,4 +85,42 @@ export class UtilService {
 
     return await model.paginate(filtro, { page, limit, populate });
   }
+
+  async chainCommand(objeto, commands, ...args) {
+    if (!objeto) {
+      throw new NegocioException(
+        'Falha ao executar comandos, objeto não definido!',
+      );
+    }
+
+    if (!(commands && _.isArray(commands) && commands.length)) {
+      throw new NegocioException(
+        'Falha ao executar comandos, comandos inválidos!',
+      );
+    }
+
+    const result = {
+      erro: [],
+      resposta: null,
+    };
+
+    for (const command of commands) {
+      try {
+        if (!result.hasOwnProperty(command)) {
+          result[command] = 0;
+        }
+
+        const resp = await objeto[command](...args);
+        if (resp) {
+          result.resposta = resp;
+          result[command]++;
+          break;
+        }
+      } catch (error) {
+        result.erro.push(error);
+      }
+    }
+
+    return result;
+  }
 }

@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import { ProdutoService } from '../produto/produto/produto.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginateModel, Types } from 'mongoose';
-import { Pedido } from './pedido-mongo';
+import { Pedido, PedidoItem } from './pedido-mongo';
 import { UtilService } from 'src/util/util.service';
 import { UsersService } from '../users/users.service';
 import { NegocioException } from 'src/exceptions/negocio-exception';
@@ -18,6 +18,8 @@ export class PedidoService {
     private util: UtilService,
     private userService: UsersService,
     @InjectModel('Pedido') private pedidoModel: PaginateModel<Pedido>,
+    @InjectModel('PedidoItem')
+    private pedidoItemModel: PaginateModel<PedidoItem>,
   ) {}
 
   async agendaCarrega() {
@@ -31,22 +33,28 @@ export class PedidoService {
     let alterado = 0;
     let erro = 0;
 
-    for (const pedido of pedidos) {
+    for (const dto of pedidos) {
+      const pedidoDto = await this.criaModeloParaSalvamento(dto);
+
       total++;
-      let obj = await this.adicionar(pedido);
-      if (obj) {
-        adicionado++;
+
+      const resp = await this.util.chainCommand(
+        this,
+        ['adicionar', 'alterar'],
+        pedidoDto,
+      );
+
+      if (resp.erro && resp.erro.length) {
+        erro += resp.erro.length;
         continue;
       }
 
-      const numero = _.get(pedido, 'numero');
-      obj = await this.alterar(numero, pedido);
-      if (obj) {
-        alterado++;
-        continue;
-      }
+      adicionado += _.get(resp, 'adicionar') || 0;
+      alterado += _.get(resp, 'alterar') || 0;
 
-      erro++;
+      const pedido = _.get(resp, 'resposta');
+
+      await this.atualizaItens(pedidoDto, pedido);
     }
 
     return (
@@ -80,14 +88,16 @@ export class PedidoService {
       return null;
     }
 
-    const pedidoDto = await this.criaModeloParaSalvamento(dto);
-
-    const pedido = new this.pedidoModel(pedidoDto);
+    const pedido = new this.pedidoModel(dto);
 
     return await pedido.save();
   }
 
-  async alterar(numero, dto) {
+  async alterar(dto, numero = null) {
+    if (!numero) {
+      numero = _.get(dto, 'numero');
+    }
+
     if (!numero) {
       return null;
     }
@@ -100,12 +110,41 @@ export class PedidoService {
       return null;
     }
 
-    const pedidoDto = await this.criaModeloParaSalvamento(dto);
-
-    pedido.set(pedidoDto);
+    pedido.set(dto);
     pedido.dataAlteracao.push(new Date());
 
     return await pedido.save();
+  }
+
+  async atualizaItens(dto, pedido) {
+    if (
+      !(pedido && dto && dto.itens && _.isArray(dto.itens) && dto.itens.length)
+    ) {
+      throw new NegocioException('Falha ao atualizar ítens.');
+    }
+
+    const itens = _.get(dto, 'itens');
+    for (const item of itens) {
+      try {
+        let pedidoItem = await this.pedidoItemModel.findOne({
+          pedido: pedido._id,
+          'produto._id': _.get(item, 'produto._id'),
+        });
+
+        if (!pedidoItem) {
+          pedidoItem = new this.pedidoItemModel();
+        }
+
+        pedidoItem.set({
+          ...item,
+          pedido: pedido._id,
+        });
+
+        await pedidoItem.save();
+      } catch (error) {
+        continue;
+      }
+    }
   }
 
   async criaModeloParaSalvamento(dto) {
@@ -122,8 +161,6 @@ export class PedidoService {
       };
     });
 
-    let parceiroId = null;
-
     const origem_itens = _.get(dto, 'itens') || [];
     const itens = await Promise.all(
       origem_itens.map(async item => {
@@ -134,8 +171,6 @@ export class PedidoService {
         if (!produto) {
           return null;
         }
-
-        parceiroId = produto.parceiro;
 
         return {
           produto: produto._id,
@@ -174,7 +209,6 @@ export class PedidoService {
         notificar_comprador:
           _.get(dto, 'situacao.notificar_comprador') || false,
       },
-      parceiro: new Types.ObjectId(parceiroId),
       dataCriacao,
     };
   }
@@ -226,6 +260,7 @@ export class PedidoService {
           millisecond: 0,
         })
         .toDate();
+
       if (filtros.hasOwnProperty('dataCriacao')) {
         filtros['dataCriacao'] = { $lt: dataFim };
       } else {
