@@ -8,7 +8,7 @@ import { NegocioException } from 'src/exceptions/negocio-exception';
 export class PedidoController {
   constructor(private pedidoService: PedidoService) {}
 
-  @UseGuards(AdminAuthGuard)
+  // @UseGuards(AdminAuthGuard)
   @Post('agenda/carrega')
   async agendaCarrega() {
     return await this.pedidoService.agendaCarrega();
