@@ -44,7 +44,9 @@ export interface PedidoItem extends Document {
   precoCusto: number;
   precoPromocional: number;
   precoVenda: number;
-  retirada: Date;
+
+  dataRetirada: Date;
+  retirada: {};
 }
 
 export const getPedidoSchema = function() {
@@ -105,7 +107,12 @@ export const getPedidoItemSchema = function() {
     precoCusto: Number,
     precoPromocional: Number,
     precoVenda: Number,
-    retirada: Date,
+
+    dataRetirada: Date,
+    retirada: {
+      type: Schema.Types.ObjectId,
+      ref: 'Retirada',
+    },
   });
 
   schema.plugin(mongoosePaginate);

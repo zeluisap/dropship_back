@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import * as XLSX from 'xlsx';
 import * as _ from 'lodash';
 import * as removeAcents from 'remove-accents';
-import { PaginateModel } from 'mongoose';
 import { NegocioException } from 'src/exceptions/negocio-exception';
 
 @Injectable()
@@ -82,8 +81,9 @@ export class UtilService {
     }
 
     const populate = _.get(options, 'populate');
+    const sort = _.get(options, 'sort');
 
-    return await model.paginate(filtro, { page, limit, populate });
+    return await model.paginate(filtro, { page, limit, populate, sort });
   }
 
   async chainCommand(objeto, commands, ...args) {

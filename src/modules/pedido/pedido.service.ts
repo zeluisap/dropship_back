@@ -128,7 +128,7 @@ export class PedidoService {
       try {
         let pedidoItem = await this.pedidoItemModel.findOne({
           pedido: pedido._id,
-          'produto._id': _.get(item, 'produto._id'),
+          produto: _.get(item, 'produto._id'),
         });
 
         if (!pedidoItem) {
@@ -140,11 +140,82 @@ export class PedidoService {
           pedido: pedido._id,
         });
 
+        await this.atualizaDataRetirada(pedidoItem, pedido);
+
         await pedidoItem.save();
       } catch (error) {
         continue;
       }
     }
+  }
+
+  async atualizaDataRetirada(pedidoItem, pedido = null) {
+    if (!pedidoItem) {
+      return;
+    }
+
+    const situacao = pedido.situacao;
+    if (!situacao) {
+      return;
+    }
+
+    if (situacao.cancelado) {
+      return;
+    }
+
+    if (!situacao.concluido) {
+      return;
+    }
+
+    if (pedidoItem.dataRetirada) {
+      return;
+    }
+
+    const tipoFormaPagamento = this.getFormaPagamento(pedido);
+    if (!tipoFormaPagamento) {
+      return;
+    }
+
+    await pedidoItem
+      .populate({
+        path: 'produto',
+        select: 'parceiro',
+      })
+      .execPopulate();
+
+    await pedidoItem.produto
+      .populate({
+        path: 'parceiro',
+        select: 'prazoFormaPagamento',
+      })
+      .execPopulate();
+
+    const prazoDias = pedidoItem.get(
+      'produto.parceiro.prazoFormaPagamento.' + tipoFormaPagamento,
+    );
+
+    const ultimaDate = pedido.dataAlteracao
+      .sort((a, b) => {
+        const momentA = moment(a);
+        const momentB = moment(b);
+
+        if (momentB.isAfter(a)) {
+          return 1;
+        }
+
+        if (momentA.isAfter(b)) {
+          return -1;
+        }
+
+        return 0;
+      })
+      .shift();
+
+    pedidoItem.set({
+      dataRetirada: moment(ultimaDate)
+        .add(prazoDias, 'days')
+        .toDate(),
+    });
   }
 
   async criaModeloParaSalvamento(dto) {
@@ -302,5 +373,9 @@ export class PedidoService {
     }
 
     return pedido;
+  }
+
+  getFormaPagamento(pedido) {
+    return 'dinheiro';
   }
 }

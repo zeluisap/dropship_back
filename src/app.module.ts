@@ -15,6 +15,8 @@ import { UtilService } from './util/util.service';
 import { LojaIntegradaModule } from './modules/loja-integrada/loja-integrada.module';
 import { PedidoModule } from './modules/pedido/pedido.module';
 import { ParametroModule } from './modules/parametro/parametro.module';
+import { RetiradaModule } from './modules/retirada/retirada.module';
+import { FormaPagamentoModule } from './modules/forma-pagamento/forma-pagamento.module';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { ParametroModule } from './modules/parametro/parametro.module';
     ProdutoModule,
 
     HttpModule.register({
-      timeout: 5000,
+      timeout: 7000,
       maxRedirects: 5,
     }),
 
@@ -79,6 +81,10 @@ import { ParametroModule } from './modules/parametro/parametro.module';
     PedidoModule,
 
     ParametroModule,
+
+    RetiradaModule,
+
+    FormaPagamentoModule,
   ],
   controllers: [AppController],
   providers: [

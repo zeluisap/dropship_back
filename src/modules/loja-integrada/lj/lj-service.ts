@@ -38,6 +38,10 @@ export class LjService {
     return await this.http.listarTodos('/marca');
   }
 
+  async listarFormaPagamento() {
+    return await this.http.listarTodos('/pagamento');
+  }
+
   async novaMarca(marca) {
     if (!marca) {
       return null;
