@@ -11,16 +11,19 @@ export interface Retirada extends Document {
 }
 
 export const getRetiradaSchema = function() {
-  const schema = new Schema({
-    dataSolicitacao: Date,
-    valor: Number,
-    situacao: String,
-    observacao: {},
-    parceiro: {
-      type: Schema.Types.ObjectId,
-      ref: 'Parceiro',
+  const schema = new Schema(
+    {
+      dataSolicitacao: Date,
+      valor: Number,
+      situacao: String,
+      observacao: {},
+      parceiro: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
     },
-  });
+    { toJSON: { virtuals: true } },
+  );
 
   schema.pre('save', function() {
     if (this.get('situacao') === undefined) {
@@ -31,15 +34,15 @@ export const getRetiradaSchema = function() {
   });
 
   schema.virtual('pendente').get(function() {
-    return this.tipo === RetiradaSituacao.PENDENTE;
+    return this.situacao === RetiradaSituacao.PENDENTE;
   });
 
   schema.virtual('cancelada').get(function() {
-    return this.tipo === RetiradaSituacao.CANCELADA;
+    return this.situacao === RetiradaSituacao.CANCELADA;
   });
 
   schema.virtual('aprovada').get(function() {
-    return this.tipo === RetiradaSituacao.APROVADA;
+    return this.situacao === RetiradaSituacao.APROVADA;
   });
 
   schema.plugin(mongoosePaginate);

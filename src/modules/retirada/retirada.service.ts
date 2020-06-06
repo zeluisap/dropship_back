@@ -8,12 +8,14 @@ import { UsersService } from '../users/users.service';
 import { NegocioException } from 'src/exceptions/negocio-exception';
 import * as moment from 'moment';
 import * as _ from 'lodash';
+import { UtilService } from 'src/util/util.service';
 
 @Injectable()
 export class RetiradaService {
   constructor(
     private pedidoService: PedidoService,
     private userService: UsersService,
+    private util: UtilService,
     @InjectModel('Retirada') private retiradaModel: PaginateModel<Retirada>,
   ) {}
 
@@ -32,12 +34,7 @@ export class RetiradaService {
   }
 
   async getTotalPagas(filtros = {}) {
-    if (!this.userService.isLogadoAdmin()) {
-      const logado = this.userService.getLogado();
-      filtros = {
-        parceiro: logado._id,
-      };
-    }
+    filtros = this.userService.filtroParceiro({ ...filtros });
 
     const pagos = await this.retiradaModel.aggregate([
       {
@@ -64,12 +61,7 @@ export class RetiradaService {
   }
 
   async getTotalPendentes(filtros = {}) {
-    if (!this.userService.isLogadoAdmin()) {
-      const logado = this.userService.getLogado();
-      filtros = {
-        parceiro: logado._id,
-      };
-    }
+    filtros = this.userService.filtroParceiro({ ...filtros });
 
     const pendentes = await this.retiradaModel.aggregate([
       {
@@ -95,37 +87,46 @@ export class RetiradaService {
     return pendentes.shift().valorPendente;
   }
 
-  async solicitar(dto: SolicitarRetiradaDto) {
-    const valorDisponivel = await this.pedidoService.getTotalRetiradaDisponivel();
+  async solicitar() {
+    const logado = this.userService.getLogado();
+
+    const valorDisponivel = await this.pedidoService.getTotalRetiradaDisponivel(
+      {
+        parceiro_id: logado._id,
+      },
+    );
+
     if (!valorDisponivel) {
       throw new NegocioException(
         'Falha ao solicitar retirada, você não possui valores disponíveis.',
       );
     }
 
-    const valor = _.get(dto, 'valor');
-    if (!valor) {
-      throw new NegocioException(
-        'Falha ao solicitar retirada, nenhum valor solicitado.',
-      );
-    }
+    // const valor = _.get(dto, 'valor');
+    // if (!valor) {
+    //   throw new NegocioException(
+    //     'Falha ao solicitar retirada, nenhum valor solicitado.',
+    //   );
+    // }
 
-    if (valor > valorDisponivel) {
-      throw new NegocioException(
-        'Valor solicitado maior que o valor disponível [' +
-          valorDisponivel +
-          '].',
-      );
-    }
+    // if (valor > valorDisponivel) {
+    //   throw new NegocioException(
+    //     'Valor solicitado maior que o valor disponível [' +
+    //       valorDisponivel +
+    //       '].',
+    //   );
+    // }
 
-    const itensDisponiveis = await this.pedidoService.getRetiradaItensDisponiveis();
-
-    const logado = this.userService.getLogado();
+    const itensDisponiveis = await this.pedidoService.getRetiradaItensDisponiveis(
+      {
+        parceiro_id: logado._id,
+      },
+    );
 
     const retirada = new this.retiradaModel();
     retirada.set({
       dataSolicitacao: moment().toDate(),
-      valor,
+      valor: valorDisponivel,
       parceiro: logado._id,
     });
 
@@ -139,5 +140,28 @@ export class RetiradaService {
     }
 
     return retirada;
+  }
+
+  async listar(options: any = {}) {
+    let filtros: any = this.userService.filtroParceiro({ ...options });
+
+    const situacao = _.get(options, 'situacao');
+    if (situacao) {
+      if (!(situacao.toUpperCase() in RetiradaSituacao)) {
+        throw new NegocioException('Situação desconhecida.');
+      }
+      filtros.situacao = situacao.toUpperCase();
+    }
+
+    filtros = this.util.filtroEntreDatas(filtros, 'dataSolicitacao');
+
+    options.populate = [
+      {
+        path: 'parceiro',
+        select: 'nome email tipo',
+      },
+    ];
+
+    return await this.util.paginar(this.retiradaModel, filtros, options);
   }
 }

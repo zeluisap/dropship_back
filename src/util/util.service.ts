@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as XLSX from 'xlsx';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 import * as removeAcents from 'remove-accents';
 import { NegocioException } from 'src/exceptions/negocio-exception';
 
@@ -124,5 +125,52 @@ export class UtilService {
     }
 
     return result;
+  }
+
+  filtroEntreDatas(filtros, campo) {
+    const prefixo = this.camelToSnake(campo);
+
+    let dataInicio = _.get(filtros, prefixo + '_inicio');
+    if (dataInicio) {
+      dataInicio = moment(dataInicio)
+        .set({
+          hour: 0,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+        })
+        .toDate();
+      filtros[campo] = { $gt: dataInicio };
+      delete filtros[prefixo + '_inicio'];
+    }
+
+    let dataFim = _.get(filtros, prefixo + '_fim');
+    if (dataFim) {
+      dataFim = moment(dataFim)
+        .set({
+          hour: 0,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+        })
+        .toDate();
+
+      if (filtros.hasOwnProperty(campo)) {
+        filtros[campo] = { ...filtros[campo], $lt: dataFim };
+      } else {
+        filtros[campo] = { ...filtros.dataCriacao, $lt: dataFim };
+      }
+      delete filtros[prefixo + '_fim'];
+    }
+
+    return filtros;
+  }
+
+  camelToSnake(string) {
+    return string
+      .replace(/[\w]([A-Z])/g, function(m) {
+        return m[0] + '_' + m[1];
+      })
+      .toLowerCase();
   }
 }

@@ -279,7 +279,7 @@ export class PedidoService {
   }
 
   async listar(options) {
-    const filtros: any = {};
+    let filtros: any = {};
 
     const cliente_nome = _.get(options, 'cliente_nome');
     if (cliente_nome) {
@@ -289,59 +289,17 @@ export class PedidoService {
       };
     }
 
-    const parceiro_nome = _.get(options, 'parceiro_nome');
-    if (parceiro_nome) {
-      filtros['parceiro.nome'] = {
-        $regex: '.*' + parceiro_nome + '.*',
-        $options: 'i',
-      };
-    }
-
     const numero = _.get(options, 'numero');
     if (numero) {
       filtros['numero'] = numero;
     }
 
-    let dataInicio = _.get(options, 'data_inicio');
-    if (dataInicio) {
-      dataInicio = moment(dataInicio)
-        .set({
-          hour: 0,
-          minute: 0,
-          second: 0,
-          millisecond: 0,
-        })
-        .toDate();
-      filtros['dataCriacao'] = { $gt: dataInicio };
+    const retirada_id = _.get(options, 'retirada_id');
+    if (retirada_id) {
+      filtros.retirada = retirada_id;
     }
 
-    let dataFim = _.get(options, 'data_fim');
-    if (dataFim) {
-      dataFim = moment(dataInicio)
-        .set({
-          hour: 0,
-          minute: 0,
-          second: 0,
-          millisecond: 0,
-        })
-        .toDate();
-
-      if (filtros.hasOwnProperty('dataCriacao')) {
-        filtros['dataCriacao'] = { $lt: dataFim };
-      } else {
-        filtros['dataCriacao'] = { ...filtros.dataCriacao, $lt: dataFim };
-      }
-    }
-
-    if (!this.userService.isLogadoAdmin()) {
-      const logado = this.userService.getLogado();
-      filtros['parceiro'] = logado._id;
-    }
-
-    options.populate = {
-      path: 'parceiro',
-      select: 'nome email',
-    };
+    filtros = this.util.filtroEntreDatas(filtros, 'dataCriacao');
 
     return await this.util.paginar(this.pedidoModel, filtros, options);
   }
@@ -351,20 +309,9 @@ export class PedidoService {
       return null;
     }
 
-    const pedido = await this.pedidoModel
-      .findOne({
-        _id: id,
-      })
-      .populate('parceiro', 'nome email cpfCnpj');
-
-    // se não for administrador, verificar se o pedido pertence ao usuário
-    if (!this.userService.isLogadoAdmin()) {
-      const logado = this.userService.getLogado();
-      const parceiro_id = pedido.get('parceiro._id');
-      if (!logado._id.equals(parceiro_id)) {
-        throw new NegocioException('Pedido não pertence ao usuário logado.');
-      }
-    }
+    const pedido = await this.pedidoModel.findOne({
+      _id: id,
+    });
 
     return pedido;
   }
@@ -452,12 +399,7 @@ export class PedidoService {
   }
 
   async getTotalRetiradaDisponivel(filtros = {}) {
-    if (!this.userService.isLogadoAdmin()) {
-      const logado = this.userService.getLogado();
-      filtros = {
-        parceiro: logado._id,
-      };
-    }
+    filtros = this.userService.filtroParceiro({ ...filtros });
 
     const disponivel = await this.pedidoItemModel.aggregate([
       {
@@ -489,12 +431,7 @@ export class PedidoService {
   }
 
   async getProximasRetiradas(filtros = {}) {
-    if (!this.userService.isLogadoAdmin()) {
-      const logado = this.userService.getLogado();
-      filtros = {
-        parceiro: logado._id,
-      };
-    }
+    filtros = this.userService.filtroParceiro({ ...filtros });
 
     const proximas = await this.pedidoItemModel.aggregate([
       {
@@ -536,12 +473,7 @@ export class PedidoService {
   }
 
   async getRetiradaItensDisponiveis(filtros = {}) {
-    if (!this.userService.isLogadoAdmin()) {
-      const logado = this.userService.getLogado();
-      filtros = {
-        parceiro: logado._id,
-      };
-    }
+    filtros = this.userService.filtroParceiro({ ...filtros });
 
     return await this.pedidoItemModel.find({
       dataRetirada: {
@@ -550,5 +482,59 @@ export class PedidoService {
       retirada: null,
       ...filtros,
     });
+  }
+
+  async listarItens(options) {
+    const filtros: any = {};
+
+    const parceiro_id = _.get(options, 'parceiro_id');
+    if (parceiro_id) {
+      filtros['parceiro'] = parceiro_id;
+    }
+
+    if (!this.userService.isLogadoAdmin()) {
+      const logado = this.userService.getLogado();
+      filtros['parceiro'] = logado._id;
+    }
+
+    options.populate = [
+      {
+        path: 'produto',
+        select: 'nome',
+      },
+      {
+        path: 'parceiro',
+        select: 'nome email tipo',
+      },
+      {
+        path: 'pedido',
+        select: 'numero cliente situacao',
+      },
+    ];
+
+    return await this.util.paginar(this.pedidoItemModel, filtros, options);
+  }
+
+  async getItemPorId(id) {
+    if (!id) {
+      return null;
+    }
+
+    const item = await this.pedidoItemModel.findOne({
+      _id: id,
+    });
+
+    // se não for administrador, verificar se o pedido pertence ao usuário
+    if (!this.userService.isLogadoAdmin()) {
+      const logado = this.userService.getLogado();
+      const parceiro_id = item.get('parceiro._id');
+      if (!logado._id.equals(parceiro_id)) {
+        throw new NegocioException(
+          'Ítem de pedido não pertence ao usuário logado.',
+        );
+      }
+    }
+
+    return item;
   }
 }

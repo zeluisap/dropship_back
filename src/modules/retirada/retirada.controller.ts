@@ -1,7 +1,6 @@
-import { Controller, UseGuards, Get, Body, Post } from '@nestjs/common';
+import { Controller, UseGuards, Get, Body, Post, Query } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RetiradaService } from './retirada.service';
-import { SolicitarRetiradaDto } from './retirada-dto';
 
 @Controller('retirada')
 export class RetiradaController {
@@ -15,7 +14,13 @@ export class RetiradaController {
 
   @UseGuards(JwtAuthGuard)
   @Post('solicitar')
-  async solicitar(@Body() dto: SolicitarRetiradaDto) {
-    return await this.retiradaService.solicitar(dto);
+  async solicitar() {
+    return await this.retiradaService.solicitar();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async listar(@Query() params) {
+    return await this.retiradaService.listar(params);
   }
 }

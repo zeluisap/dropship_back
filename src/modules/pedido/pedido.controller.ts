@@ -15,12 +15,28 @@ export class PedidoController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('item')
+  async listarItens(@Query() options) {
+    return await this.pedidoService.listarItens(options);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('item/:id')
+  async getItemPorId(@Param('id') id) {
+    const item = await this.pedidoService.getItemPorId(id);
+    if (!item) {
+      throw new NegocioException('Falha, ítem de pedido não localizado!');
+    }
+    return item;
+  }
+
+  @UseGuards(AdminAuthGuard)
   @Get()
   async get(@Query() options) {
     return await this.pedidoService.listar(options);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AdminAuthGuard)
   @Get(':id')
   async getPorId(@Param('id') id) {
     const pedido = await this.pedidoService.get(id);

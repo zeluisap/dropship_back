@@ -442,4 +442,22 @@ export class UsersService {
       _id: id,
     });
   }
+
+  filtroParceiro(filtros = {}) {
+    const filtro_parceiro_id = _.get(filtros, 'parceiro_id');
+    if (filtro_parceiro_id) {
+      filtros = {
+        parceiro: filtro_parceiro_id,
+      };
+    }
+
+    if (!this.isLogadoAdmin()) {
+      const logado = this.getLogado();
+      filtros = {
+        parceiro: logado._id,
+      };
+    }
+
+    return filtros;
+  }
 }

@@ -45,47 +45,50 @@ export interface User extends Document {
   ];
 }
 
-export const UserSchema = new Schema({
-  email: String,
-  nome: String,
-  senha: String,
-  ativo: Boolean,
-  autorizado: Boolean,
-  tipo: String,
-  prefixoSku: String,
-  lucro: {
+export const UserSchema = new Schema(
+  {
+    email: String,
+    nome: String,
+    senha: String,
+    ativo: Boolean,
+    autorizado: Boolean,
     tipo: String,
-    valor: Number,
-  },
-  informacaoBancaria: {
-    banco: {
-      codigo: String,
-      nome: String,
+    prefixoSku: String,
+    lucro: {
+      tipo: String,
+      valor: Number,
     },
-    agencia: String,
-    conta: String,
-  },
-  prazoFormaPagamento: {
-    dinheiro: Number,
-    cartaoCredito: Number,
-    cartaoDebito: Number,
-  },
-  mapeamento: [
-    {
-      nomeCampoNaAPI: String,
-      nomeCampoNoCSV: String,
-      mappers: [String],
+    informacaoBancaria: {
+      banco: {
+        codigo: String,
+        nome: String,
+      },
+      agencia: String,
+      conta: String,
     },
-  ],
-  hashAtivacao: [
-    {
-      hash: String,
-      validade: Date,
-      utilizado: Boolean,
-      novoUsuario: Boolean,
+    prazoFormaPagamento: {
+      dinheiro: Number,
+      cartaoCredito: Number,
+      cartaoDebito: Number,
     },
-  ],
-});
+    mapeamento: [
+      {
+        nomeCampoNaAPI: String,
+        nomeCampoNoCSV: String,
+        mappers: [String],
+      },
+    ],
+    hashAtivacao: [
+      {
+        hash: String,
+        validade: Date,
+        utilizado: Boolean,
+        novoUsuario: Boolean,
+      },
+    ],
+  },
+  { toJSON: { virtuals: true } },
+);
 
 export const getUserSchema = function() {
   const schema = UserSchema;
@@ -111,25 +114,6 @@ export const getUserSchema = function() {
         autorizado: false,
       });
     }
-  });
-
-  schema.set('toJSON', {
-    transform: function(doc, ret, options) {
-      return {
-        _id: ret._id,
-        email: ret.email,
-        nome: ret.nome,
-        tipo: ret.tipo,
-        prefixoSku: ret.prefixoSku,
-        lucro: ret.lucro,
-        informacaoBancaria: ret.informacaoBancaria,
-        prazoFormaPagamento: ret.prazoFormaPagamento,
-        mapeamento: ret.mapeamento,
-        admin: doc.admin,
-        ativo: ret.ativo,
-        autorizado: ret.autorizado,
-      };
-    },
   });
 
   schema.plugin(mongoosePaginate);
