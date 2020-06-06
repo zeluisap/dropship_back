@@ -534,4 +534,21 @@ export class PedidoService {
       return retorno;
     });
   }
+
+  async getRetiradaItensDisponiveis(filtros = {}) {
+    if (!this.userService.isLogadoAdmin()) {
+      const logado = this.userService.getLogado();
+      filtros = {
+        parceiro: logado._id,
+      };
+    }
+
+    return await this.pedidoItemModel.find({
+      dataRetirada: {
+        $lte: moment().toDate(),
+      },
+      retirada: null,
+      ...filtros,
+    });
+  }
 }

@@ -3,8 +3,11 @@ import { PedidoService } from '../pedido/pedido.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginateModel } from 'mongoose';
 import { Retirada } from './retirada-mongo';
-import { RetiradaSituacao } from './retirada-dto';
+import { RetiradaSituacao, SolicitarRetiradaDto } from './retirada-dto';
 import { UsersService } from '../users/users.service';
+import { NegocioException } from 'src/exceptions/negocio-exception';
+import * as moment from 'moment';
+import * as _ from 'lodash';
 
 @Injectable()
 export class RetiradaService {
@@ -90,5 +93,51 @@ export class RetiradaService {
     }
 
     return pendentes.shift().valorPendente;
+  }
+
+  async solicitar(dto: SolicitarRetiradaDto) {
+    const valorDisponivel = await this.pedidoService.getTotalRetiradaDisponivel();
+    if (!valorDisponivel) {
+      throw new NegocioException(
+        'Falha ao solicitar retirada, você não possui valores disponíveis.',
+      );
+    }
+
+    const valor = _.get(dto, 'valor');
+    if (!valor) {
+      throw new NegocioException(
+        'Falha ao solicitar retirada, nenhum valor solicitado.',
+      );
+    }
+
+    if (valor > valorDisponivel) {
+      throw new NegocioException(
+        'Valor solicitado maior que o valor disponível [' +
+          valorDisponivel +
+          '].',
+      );
+    }
+
+    const itensDisponiveis = await this.pedidoService.getRetiradaItensDisponiveis();
+
+    const logado = this.userService.getLogado();
+
+    const retirada = new this.retiradaModel();
+    retirada.set({
+      dataSolicitacao: moment().toDate(),
+      valor,
+      parceiro: logado._id,
+    });
+
+    await retirada.save();
+
+    for (const item of itensDisponiveis) {
+      item.set({
+        retirada: retirada._id,
+      });
+      await item.save();
+    }
+
+    return retirada;
   }
 }
