@@ -9,6 +9,8 @@ import { Pedido, PedidoItem } from './pedido-mongo';
 import { UtilService } from 'src/util/util.service';
 import { UsersService } from '../users/users.service';
 import { NegocioException } from 'src/exceptions/negocio-exception';
+import { FormaPagamentoService } from '../forma-pagamento/forma-pagamento.service';
+import { ParametroService } from '../parametro/parametro.service';
 
 @Injectable()
 export class PedidoService {
@@ -20,6 +22,8 @@ export class PedidoService {
     @InjectModel('Pedido') private pedidoModel: PaginateModel<Pedido>,
     @InjectModel('PedidoItem')
     private pedidoItemModel: PaginateModel<PedidoItem>,
+    private formaPagamentoService: FormaPagamentoService,
+    private parametroService: ParametroService,
   ) {}
 
   async agendaCarrega() {
@@ -171,28 +175,10 @@ export class PedidoService {
       return;
     }
 
-    const tipoFormaPagamento = this.getFormaPagamento(pedido);
-    if (!tipoFormaPagamento) {
+    const prazoDias = await this.getPrazoDias(pedidoItem, pedido);
+    if (!prazoDias) {
       return;
     }
-
-    await pedidoItem
-      .populate({
-        path: 'produto',
-        select: 'parceiro',
-      })
-      .execPopulate();
-
-    await pedidoItem.produto
-      .populate({
-        path: 'parceiro',
-        select: 'prazoFormaPagamento',
-      })
-      .execPopulate();
-
-    const prazoDias = pedidoItem.get(
-      'produto.parceiro.prazoFormaPagamento.' + tipoFormaPagamento,
-    );
 
     const ultimaDate = pedido.dataAlteracao
       .sort((a, b) => {
@@ -214,6 +200,10 @@ export class PedidoService {
     pedidoItem.set({
       dataRetirada: moment(ultimaDate)
         .add(prazoDias, 'days')
+        .hours(0)
+        .minutes(0)
+        .seconds(0)
+        .milliseconds(0)
         .toDate(),
     });
   }
@@ -243,11 +233,15 @@ export class PedidoService {
           return null;
         }
 
+        const vendaPrecoCusto = parseInt(_.get(item, 'preco_custo'));
+        const produtoPrecoCusto = produto.precoCusto;
+
         return {
           produto: produto._id,
+          parceiro: produto.parceiro,
           quantidade: _.get(item, 'quantidade'),
           precoCheio: _.get(item, 'preco_cheio'),
-          precoCusto: _.get(item, 'preco_custo'),
+          precoCusto: vendaPrecoCusto || produtoPrecoCusto || 0,
           precoPromocional: _.get(item, 'preco_promocional'),
           precoVenda: _.get(item, 'preco_venda'),
         };
@@ -375,7 +369,169 @@ export class PedidoService {
     return pedido;
   }
 
-  getFormaPagamento(pedido) {
-    return 'dinheiro';
+  /**
+   * o momento mais crítico da importação dos pedidos, é o cálculo da data de retirada do produto.
+   * O cálculo deverá seguir as seguintes regras:
+   *  - verificar entre os pagamentos do pedido, quais formas de pagamentos estão ativas para cálculo.
+   *  - das formas de pagamento relacionadas no ítem acima, o sistema deverá selecionar a forma de
+   *    pagamento que será considerada no cálculo da seguinte forma:
+   *    - pegar o cálculo dos dias para cada uma, seguindo a ordem: parceiro.prazoFormaPagamento,
+   *      valor do campo prazo no collection formaPagamento, e o parâmetro PRAZO_RETIRADA_PADRAO.
+   *    - após pegar o cálculo de cada uma, verificar qual prazo é o maior e considerálo para retirada.
+   *  - calcular a data de retirada a partir dessa quantidade de dias.
+   */
+  async getPrazoDias(pedidoItem, pedido) {
+    if (!(pedidoItem && pedido)) {
+      return null;
+    }
+
+    const prazoPadrao = await this.parametroService.getValor(
+      'PRAZO_RETIRADA_PADRAO',
+    );
+
+    const pagamentos = pedido.pagamentos;
+    const fps = [];
+    for (const pgto of pagamentos) {
+      const codigo = pgto.codigo;
+      if (!codigo) {
+        continue;
+      }
+
+      const fp = await this.formaPagamentoService.getPorCodigo(codigo);
+      if (!fp) {
+        continue;
+      }
+
+      if (!fp.ativo) {
+        continue;
+      }
+
+      fps.push(fp);
+    }
+
+    if (!fps.length) {
+      return prazoPadrao;
+    }
+
+    await pedidoItem
+      .populate({
+        path: 'produto',
+        select: 'parceiro',
+      })
+      .execPopulate();
+
+    await pedidoItem.produto
+      .populate({
+        path: 'parceiro',
+        select: 'prazoFormaPagamento',
+      })
+      .execPopulate();
+
+    const prazos = [];
+    for (const fp of fps) {
+      const prazoParceiro = pedidoItem.get(
+        'produto.parceiro.prazoFormaPagamento.' + fp.codigo,
+      );
+
+      if (prazoParceiro) {
+        prazos.push(prazoParceiro);
+        continue;
+      }
+
+      if (fp.valor) {
+        prazos.push(fp.valor);
+        continue;
+      }
+    }
+
+    if (!prazos.length) {
+      return prazoPadrao;
+    }
+
+    return prazos.sort().shift();
+  }
+
+  async getTotalRetiradaDisponivel(filtros = {}) {
+    if (!this.userService.isLogadoAdmin()) {
+      const logado = this.userService.getLogado();
+      filtros = {
+        parceiro: logado._id,
+      };
+    }
+
+    const disponivel = await this.pedidoItemModel.aggregate([
+      {
+        $match: {
+          dataRetirada: {
+            $lte: moment().toDate(),
+          },
+          retirada: {
+            $eq: null,
+          },
+          ...filtros,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          valorTotal: {
+            $sum: '$precoCusto',
+          },
+        },
+      },
+    ]);
+
+    if (!(disponivel && disponivel.length)) {
+      return 0;
+    }
+
+    return disponivel.shift().valorTotal || 0;
+  }
+
+  async getProximasRetiradas(filtros = {}) {
+    if (!this.userService.isLogadoAdmin()) {
+      const logado = this.userService.getLogado();
+      filtros = {
+        parceiro: logado._id,
+      };
+    }
+
+    const proximas = await this.pedidoItemModel.aggregate([
+      {
+        $match: {
+          dataRetirada: {
+            $gte: moment()
+              .add(1, 'days')
+              .hour(0)
+              .minute(0)
+              .second(0)
+              .millisecond(0)
+              .toDate(),
+          },
+          retirada: {
+            $eq: null,
+          },
+          ...filtros,
+        },
+      },
+      {
+        $group: {
+          _id: '$dataRetirada',
+          valorTotal: {
+            $sum: '$precoCusto',
+          },
+        },
+      },
+    ]);
+
+    if (!(proximas && proximas.length)) {
+      return [];
+    }
+
+    return proximas.map(item => {
+      const retorno = {};
+      retorno[moment(item._id).format('YYYY-MM-DD')] = item.valorTotal;
+      return retorno;
+    });
   }
 }

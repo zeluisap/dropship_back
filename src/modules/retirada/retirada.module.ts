@@ -6,6 +6,7 @@ import { PedidoModule } from '../pedido/pedido.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
+import { getRetiradaSchema } from './retirada-mongo';
 
 @Module({
   imports: [
@@ -13,6 +14,13 @@ import { UsersModule } from '../users/users.module';
     forwardRef(() => AuthModule),
     forwardRef(() => UsersModule),
     forwardRef(() => PedidoModule),
+
+    MongooseModule.forFeatureAsync([
+      {
+        name: 'Retirada',
+        useFactory: () => getRetiradaSchema(),
+      },
+    ]),
   ],
   controllers: [RetiradaController],
   providers: [RetiradaService, MongooseModule],

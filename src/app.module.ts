@@ -24,6 +24,7 @@ import { FormaPagamentoModule } from './modules/forma-pagamento/forma-pagamento.
     UsersModule,
     NotificacaoModule,
     ProdutoModule,
+    ParametroModule,
 
     HttpModule.register({
       timeout: 7000,

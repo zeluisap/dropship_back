@@ -133,4 +133,14 @@ export class FormaPagamentoService {
       _id: id,
     });
   }
+
+  async getPorCodigo(codigo) {
+    if (!codigo) {
+      return null;
+    }
+
+    return await this.formaPagamentoModel.findOne({
+      codigo,
+    });
+  }
 }

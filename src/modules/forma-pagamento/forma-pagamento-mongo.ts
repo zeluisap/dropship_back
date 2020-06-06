@@ -5,6 +5,7 @@ export interface FormaPagamento extends Document {
   codigo: string;
   nome: string;
   prazo: number;
+  ativo: boolean;
 }
 
 export const getFormaPagamentoSchema = function() {
@@ -12,6 +13,16 @@ export const getFormaPagamentoSchema = function() {
     codigo: String,
     nome: String,
     prazo: Number,
+    ativo: Boolean,
+  });
+
+  schema.pre('save', function() {
+    const obj = this;
+    if (obj.get('ativo') === undefined) {
+      obj.set({
+        ativo: true,
+      });
+    }
   });
 
   schema.plugin(mongoosePaginate);

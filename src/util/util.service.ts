@@ -6,6 +6,8 @@ import { NegocioException } from 'src/exceptions/negocio-exception';
 
 @Injectable()
 export class UtilService {
+  constructor() {}
+
   dadosPorUploadedArquivo(arquivo) {
     if (!arquivo) {
       return null;

@@ -43,7 +43,7 @@ export class ProdutoService {
       .findOne({
         _id: id,
       })
-      .populate('parceiro', 'nome');
+      .populate('parceiro', 'nome email');
   }
 
   async importar(arquivo, parceiroId = null) {

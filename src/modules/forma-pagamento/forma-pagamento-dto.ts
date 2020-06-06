@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateFormaPagamentoDto {
   @IsNotEmpty({
@@ -35,5 +35,11 @@ export class AlterFormaPagamentoDto {
     },
   )
   @IsOptional()
-  prazo: Number;
+  prazo: number;
+
+  @IsBoolean({
+    message: 'Campo ativo inválido.',
+  })
+  @IsOptional()
+  ativo: boolean;
 }

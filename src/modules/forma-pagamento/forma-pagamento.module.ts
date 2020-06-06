@@ -23,5 +23,6 @@ import { LojaIntegradaModule } from '../loja-integrada/loja-integrada.module';
   ],
   controllers: [FormaPagamentoController],
   providers: [FormaPagamentoService, MongooseModule],
+  exports: [FormaPagamentoService],
 })
 export class FormaPagamentoModule {}

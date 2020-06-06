@@ -15,7 +15,7 @@ export class PedidoController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('')
+  @Get()
   async get(@Query() options) {
     return await this.pedidoService.listar(options);
   }
