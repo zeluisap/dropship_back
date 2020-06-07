@@ -20,7 +20,12 @@ import { CreateUserDto } from './dto/create-user-dto';
 import { AlterarUserDto } from './dto/alterar-user-dto';
 import { AdminAuthGuard } from '../auth/guards/admin-auth.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiOperation,
+} from '@nestjs/swagger';
 
 @Controller('user')
 export class UserController {
@@ -77,6 +82,9 @@ export class UserController {
     name: 'limit',
     required: false,
     description: 'Limite de ítens por página',
+  })
+  @ApiOperation({
+    description: 'Listagem de usuários do sistema.',
   })
   async get(@Query() options) {
     return await this.usersService.listar(options);
