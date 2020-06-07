@@ -17,14 +17,17 @@ import {
   IsMapper,
 } from 'src/validators';
 import { TipoUsuario, LucroDto } from './user-dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class BancoDto {
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Campo código do banco obrigatório.',
   })
   @Validate(BancoCodigoValidador)
   codigo: string;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Campo nome do banco obrigatório.',
   })
@@ -33,6 +36,7 @@ export class BancoDto {
 }
 
 export class InformacaoBancariaDto {
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Campo banco não informado.',
   })
@@ -42,12 +46,14 @@ export class InformacaoBancariaDto {
   @Type(() => BancoDto)
   banco: BancoDto;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Agência não informada em informações bancárias.',
   })
   @Validate(AgenciaValidador)
   agencia: string;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Conta não informada em informações bancárias.',
   })
@@ -56,16 +62,19 @@ export class InformacaoBancariaDto {
 }
 
 export class PrazoFormaPagamentoDto {
+  @ApiProperty()
   @IsInt({
     message: 'Campo dias de prazo para DINHEIRO não informado.',
   })
   dinheiro: number;
 
+  @ApiProperty()
   @IsInt({
     message: 'Campo dias de prazo para CARTÃO DE DÉBITO não informado.',
   })
   cartaoDebito: number;
 
+  @ApiProperty()
   @IsInt({
     message: 'Campo dias de prazo para CARTÃO DE CRÉDITO não informado.',
   })
@@ -73,16 +82,19 @@ export class PrazoFormaPagamentoDto {
 }
 
 export class MapeamentoDto {
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Nome do campo na API não informado.',
   })
   nomeCampoNaAPI: string;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Nome do campo no CSV não informado.',
   })
   nomeCampoNoCSV: string;
 
+  @ApiProperty()
   @Validate(IsMapper, {
     each: true,
   })
@@ -91,6 +103,7 @@ export class MapeamentoDto {
 }
 
 export class CreateUserDto {
+  @ApiProperty()
   @IsEmail(
     {},
     {
@@ -99,22 +112,28 @@ export class CreateUserDto {
   )
   email: string;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Campo nome obrigatório.',
   })
   nome: string;
 
+  @ApiProperty()
   @IsEnum(TipoUsuario, {
     message: 'Campo tipo usuário inválido',
   })
   @Transform((valor, obj) => (obj.tipo = valor.toUpperCase()))
   tipo: TipoUsuario;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Campo prefixo SKU é obrigatório.',
   })
   prefixoSku: string;
 
+  @ApiProperty({
+    type: () => LucroDto,
+  })
   @IsNotEmpty({
     message: 'Campo lucro não informado.',
   })
@@ -124,6 +143,7 @@ export class CreateUserDto {
   @Type(() => LucroDto)
   lucro: LucroDto;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Campo Informação Bancária não informado.',
   })
@@ -133,6 +153,7 @@ export class CreateUserDto {
   @Type(() => InformacaoBancariaDto)
   informacaoBancaria: InformacaoBancariaDto;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Informe os dados de forma de pagamento.',
   })
@@ -142,6 +163,7 @@ export class CreateUserDto {
   @Type(() => PrazoFormaPagamentoDto)
   prazoFormaPagamento: PrazoFormaPagamentoDto;
 
+  @ApiProperty()
   @Validate(ArrayNotEmpty, {
     message: 'Nenhum mapeamento informado.',
   })
