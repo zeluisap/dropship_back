@@ -19,6 +19,7 @@ import {
 } from 'src/validators';
 import { TipoUsuario, LucroDto } from './user-dto';
 import { MapeamentoDto } from './create-user-dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class AlterarBancoDto {
   @IsNotEmpty({
@@ -71,6 +72,7 @@ export class AlterarPrazoFormaPagamentoDto {
 }
 
 export class AlterarUserDto {
+  @ApiProperty()
   @IsEmail(
     {},
     {
@@ -80,9 +82,11 @@ export class AlterarUserDto {
   @IsOptional()
   email: string;
 
+  @ApiProperty()
   @IsOptional()
   nome: string;
 
+  @ApiProperty()
   @IsEnum(TipoUsuario, {
     message: 'Campo tipo usuário inválido',
   })
@@ -90,10 +94,12 @@ export class AlterarUserDto {
   @Transform((valor, obj) => (obj.tipo = valor.toUpperCase()))
   tipo: TipoUsuario;
 
+  @ApiProperty()
   @IsString()
   @IsOptional()
   prefixoSku: string;
 
+  @ApiProperty()
   @ValidateNested({
     message: 'Campo lucro não pode ser vazio.',
   })
@@ -101,6 +107,7 @@ export class AlterarUserDto {
   @IsOptional()
   lucro: LucroDto;
 
+  @ApiProperty()
   @ValidateNested({
     message: 'Campo Informação Bancária não pode ser vazio.',
   })
@@ -108,6 +115,7 @@ export class AlterarUserDto {
   @IsOptional()
   informacaoBancaria: AlterarInformacaoBancariaDto;
 
+  @ApiProperty()
   @ValidateNested({
     message: 'Campo prazo de formas de pagamento não informado.',
   })
@@ -115,6 +123,7 @@ export class AlterarUserDto {
   @IsOptional()
   prazoFormaPagamento: AlterarPrazoFormaPagamentoDto;
 
+  @ApiProperty()
   @Validate(ArrayNotEmpty, {
     message: 'Nenhum mapeamento informado.',
   })
@@ -126,6 +135,7 @@ export class AlterarUserDto {
   @IsOptional()
   mapeamento: MapeamentoDto[];
 
+  @ApiProperty()
   @IsBoolean({
     message: 'Valor para campo ativo é inválido.',
   })

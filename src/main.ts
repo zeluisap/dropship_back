@@ -36,7 +36,6 @@ async function bootstrap() {
     .setTitle('Dropship backend')
     .setDescription('The dropship API description')
     .setVersion('1.0')
-    .addTag('dropship')
     .build();
 
   const document = SwaggerModule.createDocument(app, options);

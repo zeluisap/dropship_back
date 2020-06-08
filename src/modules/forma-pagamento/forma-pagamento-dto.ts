@@ -1,16 +1,20 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsBoolean } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateFormaPagamentoDto {
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Código obrigatório.',
   })
   codigo: string;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Nome obrigatório.',
   })
   nome: string;
 
+  @ApiProperty()
   @IsNumber(
     {},
     {
@@ -22,12 +26,21 @@ export class CreateFormaPagamentoDto {
 }
 
 export class AlterFormaPagamentoDto {
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   codigo: string;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
   nome: string;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsNumber(
     {},
     {
@@ -37,6 +50,9 @@ export class AlterFormaPagamentoDto {
   @IsOptional()
   prazo: number;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsBoolean({
     message: 'Campo ativo inválido.',
   })

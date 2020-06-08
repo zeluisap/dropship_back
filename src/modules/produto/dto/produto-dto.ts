@@ -9,8 +9,10 @@ import {
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { LucroDto } from 'src/modules/users/dto/user-dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProdutoDto {
+  @ApiProperty()
   @IsNumberString(
     {},
     {
@@ -19,26 +21,31 @@ export class CreateProdutoDto {
   )
   origemId: Number;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Campo nome obrigatório!',
   })
   nome: String;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Campo descricaoCompleta obrigatório!',
   })
   descricaoCompleta: String;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Campo categoria obrigatório!',
   })
   categoria: String;
 
+  @ApiProperty()
   @IsNotEmpty({
     message: 'Campo marca obrigatório!',
   })
   marca: String;
 
+  @ApiProperty()
   @IsNumber(
     {},
     {
@@ -47,6 +54,7 @@ export class CreateProdutoDto {
   )
   quantidade: Number;
 
+  @ApiProperty()
   @IsNumber(
     {},
     {
@@ -55,6 +63,7 @@ export class CreateProdutoDto {
   )
   precoCheio: Number;
 
+  @ApiProperty()
   @IsNumber(
     {},
     {
@@ -63,6 +72,7 @@ export class CreateProdutoDto {
   )
   precoCusto: Number;
 
+  @ApiProperty()
   @IsNumber(
     {},
     {
@@ -71,6 +81,7 @@ export class CreateProdutoDto {
   )
   precoPromocional: Number;
 
+  @ApiProperty()
   @ValidateNested({
     message: 'Campo lucro não informado.',
   })
@@ -80,6 +91,9 @@ export class CreateProdutoDto {
 }
 
 export class EditarProdutoDto {
+  @ApiProperty({
+    required: false,
+  })
   @IsNumberString(
     {},
     {
@@ -89,30 +103,45 @@ export class EditarProdutoDto {
   @IsOptional()
   origemId: Number;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsNotEmpty({
     message: 'Campo nome obrigatório!',
   })
   @IsOptional()
   nome: String;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsNotEmpty({
     message: 'Campo descricaoCompleta obrigatório!',
   })
   @IsOptional()
   descricaoCompleta: String;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsNotEmpty({
     message: 'Campo categoria obrigatório!',
   })
   @IsOptional()
   categoria: String;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsNotEmpty({
     message: 'Campo marca obrigatório!',
   })
   @IsOptional()
   marca: String;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsNumber(
     {},
     {
@@ -122,6 +151,9 @@ export class EditarProdutoDto {
   @IsOptional()
   quantidade: Number;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsNumber(
     {},
     {
@@ -131,6 +163,9 @@ export class EditarProdutoDto {
   @IsOptional()
   precoCheio: Number;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsNumber(
     {},
     {
@@ -140,6 +175,9 @@ export class EditarProdutoDto {
   @IsOptional()
   precoCusto: Number;
 
+  @ApiProperty({
+    required: false,
+  })
   @IsNumber(
     {},
     {
@@ -149,6 +187,9 @@ export class EditarProdutoDto {
   @IsOptional()
   precoPromocional: Number;
 
+  @ApiProperty({
+    required: false,
+  })
   @ValidateNested({
     message: 'Campo lucro não informado.',
   })
