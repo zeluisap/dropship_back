@@ -1,7 +1,22 @@
-import { Controller, UseGuards, Get, Body, Post, Query } from '@nestjs/common';
+import {
+  Controller,
+  UseGuards,
+  Get,
+  Body,
+  Post,
+  Query,
+  Param,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RetiradaService } from './retirada.service';
-import { ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
+import { AdminAuthGuard } from '../auth/guards/admin-auth.guard';
 
 @Controller('retirada')
 export class RetiradaController {
@@ -30,6 +45,27 @@ export class RetiradaController {
   @Post('solicitar')
   async solicitar() {
     return await this.retiradaService.solicitar();
+  }
+
+  @ApiOperation({
+    description: 'Confirmar pedido de retirada.',
+  })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    description: 'ID da retirada.',
+  })
+  @ApiBody({
+    schema: {
+      example: {
+        arquivo_id: 'ID do arquivo (repositório).',
+      },
+    },
+  })
+  @UseGuards(AdminAuthGuard)
+  @Post('aprovar/:id')
+  async aprovar(@Param('id') id, @Body('arquivo_id') arquivoId) {
+    return await this.retiradaService.aprovar(id, arquivoId);
   }
 
   @ApiOperation({

@@ -55,6 +55,14 @@ export class UserController {
   }
 
   @ApiOperation({
+    description: 'Solicitação de redefinição de senha pelo usuário.',
+  })
+  @Post('redefinir')
+  async redefinir(@Body() userDto: RedefinirUserDto) {
+    return await this.usersService.redefinir(userDto.email);
+  }
+
+  @ApiOperation({
     description: 'Alterar usuário pelo administrador.',
   })
   @ApiBearerAuth()
@@ -138,14 +146,6 @@ export class UserController {
   @Get('')
   async get(@Query() options) {
     return await this.usersService.listar(options);
-  }
-
-  @ApiOperation({
-    description: 'Solicitação de redefinição de senha pelo usuário.',
-  })
-  @Post('redefinir')
-  async redefinir(@Body() userDto: RedefinirUserDto) {
-    return await this.usersService.redefinir(userDto.email);
   }
 
   @ApiOperation({

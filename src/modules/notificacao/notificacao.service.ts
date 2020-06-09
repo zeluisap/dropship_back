@@ -15,6 +15,25 @@ export class NotificacaoService {
   ) {}
 
   async notificar(dados) {
+    dados.template = 'acao';
+    const notificacao = new this.notificacaoEmailModel(dados);
+    return await notificacao.save();
+  }
+
+  async notificarNovoUser(user, urlAtivacao) {
+    const dados = {
+      destinatario: {
+        email: user.email,
+        nome: user.nome,
+      },
+      context: {
+        nome: user.nome,
+        link: urlAtivacao,
+      },
+      titulo: 'Novo usuário cadastrado',
+      template: 'user_novo',
+    };
+
     const notificacao = new this.notificacaoEmailModel(dados);
     return await notificacao.save();
   }
@@ -37,6 +56,9 @@ export class NotificacaoService {
         await this.enviar(not);
         enviados++;
       } catch (error) {
+        console.log({
+          error,
+        });
         not.erro = error.message;
         erros++;
       } finally {
@@ -60,12 +82,35 @@ export class NotificacaoService {
     const dto = {
       to: not.destinatario.email, // list of receivers
       subject: not.titulo, // Subject line
-      text: not.conteudo, // plaintext body
-      html: not.conteudoHtml, // HTML body content
+      template: 'dropship_' + not.template,
+      context: not.context,
+      // text: not.conteudo, // plaintext body
+      // html: not.conteudoHtml, // HTML body content
     };
 
-    const result = await this.mailerService.sendMail(dto);
+    await this.mailerService.sendMail(dto);
 
     not.sucesso = true;
+  }
+
+  async notificaRetiradaAprovar(retirada) {
+    const dados = {
+      destinatario: {
+        email: retirada.get('parceiro.email'),
+        nome: retirada.get('parceiro.nome'),
+      },
+      context: {
+        nome: retirada.get('parceiro.nome'),
+        data_solicitacao: moment(retirada.get('dataSolicitacao')).format(
+          'DD/MM/YYYY',
+        ),
+        valor: 'R$: ' + retirada.get('valor'),
+      },
+      titulo: 'Retirada Aprovada',
+      template: 'retirada_aprovada',
+    };
+
+    const notificacao = new this.notificacaoEmailModel(dados);
+    return await notificacao.save();
   }
 }

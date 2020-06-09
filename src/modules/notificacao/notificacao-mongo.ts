@@ -15,6 +15,8 @@ export interface NotificacaoEmail extends Notificacao {
     nome: string;
   };
   conteudoHtml: string;
+  context: {};
+  template: string;
 }
 
 export const NotificacaoEmailSchema = new Schema({
@@ -29,6 +31,8 @@ export const NotificacaoEmailSchema = new Schema({
   processado: Boolean,
   sucesso: Boolean,
   erro: String,
+  context: {},
+  template: String,
 });
 
 export const getNotificacaoEmailSchema = function() {

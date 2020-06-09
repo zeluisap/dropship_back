@@ -108,25 +108,7 @@ export class UsersService {
     const urlAtivacao =
       this.configService.get<string>('URL_FRONT') + '/ativar/' + decodificado;
 
-    this.notificacaoService.notificar({
-      destinatario: {
-        email: user.email,
-        nome: user.nome,
-      },
-      titulo: 'Novo usuário cadastrado',
-      conteudo:
-        'Prezado ' +
-        user.nome +
-        ', \n\npara ativar sua conta, acesse o endereço: ' +
-        urlAtivacao +
-        '  \n\n Att. Adm Sistema.',
-      conteudoHtml:
-        '<p>Prezado ' +
-        user.nome +
-        ',</p><p>para ativar sua conta, acesse o endereço: ' +
-        urlAtivacao +
-        '</p><br><br><p>Att. Adm Sistema.</p>',
-    });
+    this.notificacaoService.notificarNovoUser(user, urlAtivacao);
   }
 
   async geraHashCriacao(user) {
@@ -287,19 +269,12 @@ export class UsersService {
         email: user.email,
         nome: user.nome,
       },
+      context: {
+        nome: user.nome,
+        action: 'Redefinição de senha',
+        link: urlAtivacao,
+      },
       titulo: 'Solicitação de redefinição de senha.',
-      conteudo:
-        'Prezado ' +
-        user.nome +
-        ', \n\nPara redefinir sua senha, acesse o endereço: ' +
-        urlAtivacao +
-        '  \n\n Att. Adm Sistema.',
-      conteudoHtml:
-        '<p>Prezado ' +
-        user.nome +
-        ',</p><p>Para redefinir sua senha, acesse o endereço: ' +
-        urlAtivacao +
-        '</p><br><br><p>Att. Adm Sistema.</p>',
     });
   }
 

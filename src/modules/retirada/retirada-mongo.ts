@@ -8,6 +8,15 @@ export interface Retirada extends Document {
   situacao: string;
   observacao: {};
   parceiro: {};
+  aprovacao: {
+    dataAprovacao: Date;
+    usuario: {};
+    comprovante: {};
+  };
+
+  pendente: boolean;
+  cancelada: boolean;
+  aprovada: boolean;
 }
 
 export const getRetiradaSchema = function() {
@@ -20,6 +29,14 @@ export const getRetiradaSchema = function() {
       parceiro: {
         type: Schema.Types.ObjectId,
         ref: 'User',
+      },
+      aprovacao: {
+        dataAprovacao: Date,
+        usuario: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+        },
+        comprovante: {},
       },
     },
     { toJSON: { virtuals: true } },

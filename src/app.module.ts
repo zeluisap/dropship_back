@@ -17,6 +17,7 @@ import { PedidoModule } from './modules/pedido/pedido.module';
 import { ParametroModule } from './modules/parametro/parametro.module';
 import { RetiradaModule } from './modules/retirada/retirada.module';
 import { FormaPagamentoModule } from './modules/forma-pagamento/forma-pagamento.module';
+import { ReposModule } from './modules/repos/repos.module';
 
 @Module({
   imports: [
@@ -86,6 +87,8 @@ import { FormaPagamentoModule } from './modules/forma-pagamento/forma-pagamento.
     RetiradaModule,
 
     FormaPagamentoModule,
+
+    ReposModule,
   ],
   controllers: [AppController],
   providers: [

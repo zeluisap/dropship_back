@@ -9,6 +9,8 @@ import { NegocioException } from 'src/exceptions/negocio-exception';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 import { UtilService } from 'src/util/util.service';
+import { ReposService } from '../repos/repos.service';
+import { NotificacaoService } from '../notificacao/notificacao.service';
 
 @Injectable()
 export class RetiradaService {
@@ -16,6 +18,8 @@ export class RetiradaService {
     private pedidoService: PedidoService,
     private userService: UsersService,
     private util: UtilService,
+    private repos: ReposService,
+    private notifica: NotificacaoService,
     @InjectModel('Retirada') private retiradaModel: PaginateModel<Retirada>,
   ) {}
 
@@ -163,5 +167,58 @@ export class RetiradaService {
     ];
 
     return await this.util.paginar(this.retiradaModel, filtros, options);
+  }
+
+  async aprovar(id, arquivoId) {
+    if (!id) {
+      throw new NegocioException('Retirada não localizada!');
+    }
+
+    const retirada = await this.retiradaModel
+      .findOne({ _id: id })
+      .populate('parceiro', 'nome email tipo admin');
+    if (!retirada) {
+      throw new NegocioException('Retirada não localizada!!');
+    }
+
+    if (retirada.cancelada) {
+      throw new NegocioException('Retirada cancelada!');
+    }
+
+    if (retirada.aprovada) {
+      throw new NegocioException('Retirada já aprovada!');
+    }
+
+    if (!arquivoId) {
+      throw new NegocioException('ID do arquivo do comprovante não informado!');
+    }
+
+    try {
+      const arquivo = await this.repos.get(arquivoId);
+      if (!arquivo) {
+        throw new NegocioException('ID de arquivo não encontrado!');
+      }
+    } catch (error) {
+      throw new NegocioException(
+        'Falha ao validar arquivo de confirmação de pagamento, entre em contato com o administrador!',
+      );
+    }
+
+    const logado = this.userService.getLogado();
+
+    retirada.set({
+      situacao: RetiradaSituacao.APROVADA,
+      aprovacao: {
+        dataAprovacao: moment().toDate(),
+        usuario: logado._id,
+        comprovante: arquivoId,
+      },
+    });
+
+    const obj = await retirada.save();
+
+    await this.notifica.notificaRetiradaAprovar(retirada);
+
+    return obj;
   }
 }

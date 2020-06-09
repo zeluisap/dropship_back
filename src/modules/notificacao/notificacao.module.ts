@@ -4,7 +4,7 @@ import { NotificacaoService } from './notificacao.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { getNotificacaoEmailSchema } from './notificacao-mongo';
 import { NotificacaoController } from './notificacao/notificacao.controller';
-import { MailerModule, PugAdapter } from '@nestjs-modules/mailer';
+import { MailerModule, HandlebarsAdapter } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -22,7 +22,9 @@ import { MailerModule, PugAdapter } from '@nestjs-modules/mailer';
       },
       template: {
         dir: __dirname + '/templates',
-        adapter: new PugAdapter(),
+        // dir:
+        //   '/home/zeluis/projetos/kapuca/dropship/back/src/modules/notificacao/templates',
+        adapter: new HandlebarsAdapter(),
         options: {
           strict: true,
         },
