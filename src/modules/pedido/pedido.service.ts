@@ -163,13 +163,13 @@ export class PedidoService {
       return;
     }
 
-    if (situacao.cancelado) {
-      return;
-    }
+    // if (situacao.cancelado) {
+    //   return;
+    // }
 
-    if (!situacao.concluido) {
-      return;
-    }
+    // if (!situacao.concluido) {
+    //   return;
+    // }
 
     if (pedidoItem.dataRetirada) {
       return;

@@ -113,4 +113,51 @@ export class NotificacaoService {
     const notificacao = new this.notificacaoEmailModel(dados);
     return await notificacao.save();
   }
+
+  async notificaRetiradaCanceladaPeloAdmin(retirada) {
+    const dados = {
+      destinatario: {
+        email: retirada.get('parceiro.email'),
+        nome: retirada.get('parceiro.nome'),
+      },
+      context: {
+        nome: retirada.get('parceiro.nome'),
+        data_solicitacao: moment(retirada.get('dataSolicitacao')).format(
+          'DD/MM/YYYY',
+        ),
+        valor: 'R$: ' + retirada.get('valor'),
+        motivo: retirada.get('analise.motivo'),
+      },
+      titulo: 'Retirada cancelada pelo administrador.',
+      template: 'retirada_cancelada_admin',
+    };
+
+    const notificacao = new this.notificacaoEmailModel(dados);
+    return await notificacao.save();
+  }
+
+  async notificaRetiradaCanceladaPeloParceiro(retirada) {
+    const dados = {
+      destinatario: {
+        email: retirada.get('parceiro.email'),
+        nome: retirada.get('parceiro.nome'),
+      },
+      context: {
+        nome: retirada.get('parceiro.nome'),
+        data_solicitacao: moment(retirada.get('dataSolicitacao')).format(
+          'DD/MM/YYYY',
+        ),
+        valor: 'R$: ' + retirada.get('valor'),
+        motivo:
+          'Cancelado a pedido do parceiro em ' +
+          moment(retirada.get('analise.dataAnalise')).format('DD/MM/YYYY') +
+          '.',
+      },
+      titulo: 'Retirada cancelada',
+      template: 'retirada_cancelada_parceiro',
+    };
+
+    const notificacao = new this.notificacaoEmailModel(dados);
+    return await notificacao.save();
+  }
 }

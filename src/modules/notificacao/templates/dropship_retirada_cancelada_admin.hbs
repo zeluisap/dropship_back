@@ -1,0 +1,93 @@
+<style type="text/css">
+  body {
+    heigth: '100%';
+    width: '100%';
+    background-color: #EDEFF0;
+
+    font-size: 14px;
+    line-height: 150%;
+
+    font-family: Helvetica, sans-serif;
+  }
+
+  .mail-body-container {
+    margin: 30px auto;
+    width: 650px;
+  }
+
+  .mail-content {
+    margin: 30px auto;
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    padding: 60px 50px;
+  }
+
+  .mail-alternatives {
+    margin-top: 60px;
+    border-top-width: 1px;
+    border-top-color: #e2e5e8;
+    border-top-style: solid;
+  }
+
+  .app-logo {
+    background-color: lightgray;
+    height: 60px;
+    width: 220px;
+  }
+
+  h1 {
+    color: ##384047;
+    font-size: 24px;
+    line-height: 130%;
+    font-weight: bold;
+    letter-spacing: normal;
+  }
+
+  h3 {
+    color: #384047;
+    margin-top: 30px;
+  }
+
+  p {
+    color: #7A7F84;
+    font-size: 18px;
+    font-weight: normal;
+    line-height: 150%;
+    letter-spacing: normal;
+    margin: 15px 0 10px;
+  }
+
+  p>strong {
+    color: #657380;
+    font-weight: 700;
+  }
+
+
+  .direct-link-box {
+    background-color: #F3F5F6;
+    padding: 25px;
+    border-radius: 8px;
+  }
+</style>
+
+<div class="mail-body-container">
+  <div class="mail-header">
+    <div class="app-logo"></div>
+  </div>
+  <div class="mail-content">
+    <h1>Olá {{nome}},</h1>
+
+    <p>Sua solicitação de retirada efetuada no dia {{data_solicitacao}}, no valor de
+      {{valor}}, foi cancelada.</p>
+
+    <p>Motivo: {{motivo}}</p>
+
+    <div class="mail-alternatives">
+
+      <h3>Dúvidas ?</h3>
+
+      <p>Se houver algo mais que possamos fazer para lhe ajudar a resolver qualquer problema com nossa plataforma você
+        pode responder esse email ou enviar um email para o endereço <strong>ajuda@dropshipapp.com</strong>.</p>
+    </div>
+  </div>
+</div>

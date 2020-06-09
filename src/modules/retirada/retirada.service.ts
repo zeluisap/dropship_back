@@ -208,8 +208,8 @@ export class RetiradaService {
 
     retirada.set({
       situacao: RetiradaSituacao.APROVADA,
-      aprovacao: {
-        dataAprovacao: moment().toDate(),
+      analise: {
+        dataAnalise: moment().toDate(),
         usuario: logado._id,
         comprovante: arquivoId,
       },
@@ -218,6 +218,63 @@ export class RetiradaService {
     const obj = await retirada.save();
 
     await this.notifica.notificaRetiradaAprovar(retirada);
+
+    return obj;
+  }
+
+  async cancelar(id, motivo) {
+    if (!id) {
+      throw new NegocioException('Retirada não localizada!');
+    }
+
+    const retirada = await this.retiradaModel
+      .findOne({ _id: id })
+      .populate('parceiro', 'nome email tipo admin');
+    if (!retirada) {
+      throw new NegocioException('Retirada não localizada!!');
+    }
+
+    if (retirada.aprovada) {
+      throw new NegocioException('Retirada aprovada!');
+    }
+
+    if (retirada.cancelada) {
+      throw new NegocioException('Retirada já cancelada!');
+    }
+
+    const logado = this.userService.getLogado();
+
+    let metodoNotificacao = 'PeloAdmin';
+    if (!this.userService.isLogadoAdmin()) {
+      if (!logado._id.equals(retirada.get('parceiro._id'))) {
+        throw new NegocioException(
+          'Solicitação de retirada não pertence ao usuário!',
+        );
+      }
+      metodoNotificacao = 'PeloParceiro';
+      motivo = 'Cancelado a pedido do parceiro.';
+    }
+
+    if (this.userService.isLogadoAdmin() && !motivo) {
+      throw new NegocioException(
+        'Administrador deve informar motivo do cancelamento!',
+      );
+    }
+
+    retirada.set({
+      situacao: RetiradaSituacao.CANCELADA,
+      analise: {
+        dataAnalise: moment().toDate(),
+        usuario: logado._id,
+        motivo,
+      },
+    });
+
+    const obj = await retirada.save();
+
+    const nomeFuncNotifica = 'notificaRetiradaCancelada' + metodoNotificacao;
+
+    await this.notifica[nomeFuncNotifica](retirada);
 
     return obj;
   }

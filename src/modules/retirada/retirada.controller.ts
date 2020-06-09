@@ -69,6 +69,27 @@ export class RetiradaController {
   }
 
   @ApiOperation({
+    description: 'Cancelar pedido de retirada.',
+  })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    description: 'ID da retirada.',
+  })
+  @ApiBody({
+    schema: {
+      example: {
+        motivo: 'Motivo do Cancelamento (apenas administrador).',
+      },
+    },
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('cancelar/:id')
+  async cancelar(@Param('id') id, @Body('motivo') motivo) {
+    return await this.retiradaService.cancelar(id, motivo);
+  }
+
+  @ApiOperation({
     description: 'Listagem das retiradas.',
   })
   @ApiBearerAuth()
