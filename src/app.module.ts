@@ -79,15 +79,10 @@ import { ReposModule } from './modules/repos/repos.module';
     }),
 
     LojaIntegradaModule,
-
     PedidoModule,
-
     ParametroModule,
-
     RetiradaModule,
-
     FormaPagamentoModule,
-
     ReposModule,
   ],
   controllers: [AppController],

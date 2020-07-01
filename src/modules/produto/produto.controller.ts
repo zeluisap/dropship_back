@@ -12,7 +12,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { ProdutoService } from './produto.service';
-import { CreateProdutoDto, EditarProdutoDto } from '../dto/produto-dto';
+import { CreateProdutoDto, EditarProdutoDto } from './produto-dto';
 import {
   ApiOperation,
   ApiBearerAuth,

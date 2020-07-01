@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { LjService } from '../loja-integrada/lj/lj-service';
 import * as _ from 'lodash';
 import * as moment from 'moment';
-import { ProdutoService } from '../produto/produto/produto.service';
+import { ProdutoService } from '../produto/produto.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginateModel, Types } from 'mongoose';
 import { Pedido, PedidoItem } from './pedido-mongo';

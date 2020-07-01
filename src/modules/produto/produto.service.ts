@@ -1,17 +1,18 @@
 import { Injectable, HttpException, BadRequestException } from '@nestjs/common';
 import { UtilService } from 'src/util/util.service';
 import * as _ from 'lodash';
-import * as mappers from '../../../util/string.mappers';
+import * as mappers from '../../util/string.mappers';
 import { CurrentUserService } from 'src/modules/auth/current-user/current-user.service';
-import { Produto } from '../produto-mongo';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, PaginateModel } from 'mongoose';
 import { validateOrReject, isDecimal } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { CreateProdutoDto, EditarProdutoDto } from '../dto/produto-dto';
 import { UsersService } from 'src/modules/users/users.service';
 import { LjService } from 'src/modules/loja-integrada/lj/lj-service';
 import { NegocioException } from 'src/exceptions/negocio-exception';
+import { CreateProdutoDto, EditarProdutoDto } from './produto-dto';
+import { Produto } from './produto-mongo';
+import { ReposService } from '../repos/repos.service';
 
 const StatusProduto = {
   ADICIONADO: 1,
@@ -32,6 +33,7 @@ export class ProdutoService {
     private ljService: LjService,
     @InjectModel('Produto') private produtoModel: PaginateModel<Produto>,
     private util: UtilService,
+    private repos: ReposService,
   ) {}
 
   async get(id) {
@@ -256,6 +258,8 @@ export class ProdutoService {
       return null;
     }
 
+    await this.validaImagens(item);
+
     produto = new this.produtoModel();
 
     produto.set({
@@ -285,6 +289,7 @@ export class ProdutoService {
       'categoria',
       'lucro',
       'ativo',
+      'imagens',
     ];
 
     const dto = {
@@ -313,7 +318,7 @@ export class ProdutoService {
     const pendentes = await this.produtoModel
       .find({
         lojaIntegradaImportado: false,
-        'parceiro.autorizado': true,
+        // 'parceiro.autorizado': true,
       })
       .populate('parceiro', 'nome prefixoSku autorizado');
 
@@ -336,6 +341,7 @@ export class ProdutoService {
       try {
         const novo = await this.atualizaApiAgendaProduto(pendente);
         await this.atualizaApiAgendaPrecoEstoque(pendente);
+        await this.atualizaImagens(pendente);
 
         if (novo) {
           adicionado++;
@@ -356,6 +362,37 @@ export class ProdutoService {
       erro +
       '.'
     );
+  }
+
+  async atualizaImagens(produto) {
+    const imagens = _.get(produto, 'imagens');
+    if (!(imagens && imagens.length)) {
+      return;
+    }
+
+    // atualizar as imagens no api agenda
+    const ljProdutoId = produto.lojaIntegradaId;
+    if (!ljProdutoId) {
+      return;
+    }
+
+    if (!(produto.imagens && produto.imagens.length)) {
+      return;
+    }
+
+    let ljImagens = await this.ljService.listarImagens(ljProdutoId);
+    for (const imagem of produto.imagens) {
+      const info = await this.repos.get(imagem);
+      if (ljImagens && ljImagens.length) {
+        const existe = ljImagens.some(ljImagem => {
+          return false;
+        });
+        if (existe) {
+          continue;
+        }
+      }
+      await this.ljService.addImagem(produto, info);
+    }
   }
 
   async atualizaApiAgendaProduto(produto) {
@@ -527,6 +564,8 @@ export class ProdutoService {
       );
     }
 
+    await this.validaImagens(dto);
+
     produto.set({
       ...dto,
       lojaIntegradaImportado: false,
@@ -551,5 +590,38 @@ export class ProdutoService {
     }
 
     return produto;
+  }
+
+  async validaImagens(item) {
+    const arquivos = await this.carregaImagens(item);
+    if (!(arquivos && arquivos.length)) {
+      return;
+    }
+
+    for (const arquivo of arquivos) {
+      if (!arquivo.imagem) {
+        throw new NegocioException('Uma dos arquivos enviados não é imagem.');
+      }
+    }
+  }
+
+  async carregaImagens(item) {
+    const imagens = _.get(item, 'imagens');
+    if (!(imagens && imagens.length)) {
+      return;
+    }
+
+    const arquivos = [];
+
+    for (const imagem of imagens) {
+      const arquivo = await this.repos.get(imagem);
+      if (!arquivo) {
+        throw new NegocioException('Uma das imagens do produto é inválido!');
+      }
+
+      arquivos.push(arquivo);
+    }
+
+    return arquivos;
   }
 }

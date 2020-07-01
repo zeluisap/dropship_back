@@ -42,6 +42,10 @@ export class LjService {
     return await this.http.listarTodos('/pagamento');
   }
 
+  async listarImagens(produtoId) {
+    return await this.http.listarTodos('/produto_imagem/?produto=' + produtoId);
+  }
+
   async novaMarca(marca) {
     if (!marca) {
       return null;
@@ -215,5 +219,19 @@ export class LjService {
     }
 
     return retorno;
+  }
+
+  async addImagem(produto, imagem) {
+    if (!(produto && produto.id)) {
+      return;
+    }
+
+    return await this.http.post('/produto_imagem/', {
+      imagem_url: imagem.link_download,
+      produto: '/api/v1/produto/' + produto.lojaIntegradaId,
+      principal: true,
+      posicao: 0,
+      mime: imagem.contentType,
+    });
   }
 }

@@ -81,13 +81,11 @@ export class CreateProdutoDto {
   )
   precoPromocional: Number;
 
-  @ApiProperty()
-  @ValidateNested({
-    message: 'Campo lucro não informado.',
+  @ApiProperty({
+    description: 'Listagem dos ids das imagens do produto.',
   })
-  @Type(() => LucroDto)
   @IsOptional()
-  lucro: LucroDto;
+  imagens: String[];
 }
 
 export class EditarProdutoDto {
@@ -196,4 +194,10 @@ export class EditarProdutoDto {
   @Type(() => LucroDto)
   @IsOptional()
   lucro: LucroDto;
+
+  @ApiProperty({
+    description: 'Listagem dos ids das imagens do produto.',
+  })
+  @IsOptional()
+  imagens: String[];
 }

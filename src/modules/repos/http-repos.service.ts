@@ -15,7 +15,7 @@ export class HttpReposService {
   }
 
   async request(path, params = {}, method = 'get') {
-    const url = this.config.get('REPOSITORIO_URL') + path;
+    const url = this.getBaseUrl() + path;
 
     let response = null;
     if (method.toLowerCase() === 'get') {
@@ -25,5 +25,9 @@ export class HttpReposService {
     }
 
     return _.get(response, 'data');
+  }
+
+  getBaseUrl() {
+    return this.config.get('REPOSITORIO_URL');
   }
 }
