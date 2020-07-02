@@ -349,9 +349,6 @@ export class ProdutoService {
           alterado++;
         }
       } catch (error) {
-        console.log({
-          error: error.response,
-        });
         erro++;
       }
     }
@@ -384,6 +381,11 @@ export class ProdutoService {
     }
 
     let ljImagens = await this.ljService.listarImagens(ljProdutoId);
+
+    let existePrincipal = (ljImagens || []).some(imagem => {
+      return imagem.principal;
+    });
+
     for (const imagem of produto.imagens) {
       const info = await this.repos.get(imagem);
       if (ljImagens && ljImagens.length) {
@@ -394,7 +396,14 @@ export class ProdutoService {
           continue;
         }
       }
-      await this.ljService.addImagem(produto, info);
+
+      let principal = false;
+      if (!existePrincipal) {
+        principal = true;
+        existePrincipal = true;
+      }
+
+      await this.ljService.addImagem(produto, info, principal);
     }
   }
 

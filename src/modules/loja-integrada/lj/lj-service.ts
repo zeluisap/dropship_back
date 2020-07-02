@@ -221,7 +221,7 @@ export class LjService {
     return retorno;
   }
 
-  async addImagem(produto, imagem) {
+  async addImagem(produto, imagem, principal = false) {
     if (!(produto && produto.id)) {
       return;
     }
@@ -229,7 +229,7 @@ export class LjService {
     return await this.http.post('/produto_imagem/', {
       imagem_url: imagem.link_download,
       produto: '/api/v1/produto/' + produto.lojaIntegradaId,
-      principal: false,
+      principal,
       posicao: 0,
       mime: imagem.contentType,
     });
