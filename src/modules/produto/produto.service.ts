@@ -349,6 +349,9 @@ export class ProdutoService {
           alterado++;
         }
       } catch (error) {
+        console.log({
+          error,
+        });
         erro++;
       }
     }
