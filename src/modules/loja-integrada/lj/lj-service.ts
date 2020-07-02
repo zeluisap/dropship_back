@@ -229,7 +229,7 @@ export class LjService {
     return await this.http.post('/produto_imagem/', {
       imagem_url: imagem.link_download,
       produto: '/api/v1/produto/' + produto.lojaIntegradaId,
-      principal: true,
+      principal: false,
       posicao: 0,
       mime: imagem.contentType,
     });

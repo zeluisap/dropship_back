@@ -350,7 +350,7 @@ export class ProdutoService {
         }
       } catch (error) {
         console.log({
-          error,
+          error: error.response,
         });
         erro++;
       }
