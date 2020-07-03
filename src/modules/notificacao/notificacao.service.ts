@@ -160,4 +160,34 @@ export class NotificacaoService {
     const notificacao = new this.notificacaoEmailModel(dados);
     return await notificacao.save();
   }
+
+  async notificaBoletim(boletim) {
+    const infos = boletim.dadosHistoricoPaciente.split('\n').map(info => {
+      const partes = info.split(': ');
+      return {
+        label: partes[0],
+        valor: partes[1],
+      };
+    });
+
+    const data_boletim = moment(boletim.get('dataCadastro')).format(
+      'DD/MM/YYYY HH:mm:ss',
+    );
+
+    const dados = {
+      destinatario: {
+        email: 'zeluis.ap@gmail.com',
+        nome: 'José Luís',
+      },
+      context: {
+        data_boletim,
+        dados: infos,
+      },
+      titulo: 'Novo boletim - ' + data_boletim,
+      template: 'boletim',
+    };
+
+    const notificacao = new this.notificacaoEmailModel(dados);
+    return await notificacao.save();
+  }
 }
