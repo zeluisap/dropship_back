@@ -31,6 +31,7 @@ export interface Produto extends Document {
     valor: number;
   };
 
+  imagemPrincipal: string;
   imagens: [string];
 }
 
@@ -67,6 +68,7 @@ export const ProdutoSchema = new Schema({
     valor: Number,
   },
 
+  imagemPrincipal: String,
   imagens: [String],
 });
 

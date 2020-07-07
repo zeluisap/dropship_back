@@ -364,6 +364,18 @@ export class ProdutoService {
     );
   }
 
+  async atualizaImagemPrincipal(produto) {
+    if (!(produto && produto.imagemPrincipal)) {
+      return;
+    }
+
+    const imagem = produto.imagemPrincipal;
+
+    const info = await this.repos.get(imagem);
+
+    await this.ljService.addImagem(produto, info, true);
+  }
+
   async atualizaImagens(produto) {
     const imagens = _.get(produto, 'imagens');
     if (!(imagens && imagens.length)) {
@@ -376,15 +388,14 @@ export class ProdutoService {
       return;
     }
 
+    //atualiza imagem principal
+    await this.atualizaImagemPrincipal(produto);
+
     if (!(produto.imagens && produto.imagens.length)) {
       return;
     }
 
     let ljImagens = await this.ljService.listarImagens(ljProdutoId);
-
-    let existePrincipal = (ljImagens || []).some(imagem => {
-      return imagem.principal;
-    });
 
     for (const imagem of produto.imagens) {
       const info = await this.repos.get(imagem);
@@ -397,13 +408,7 @@ export class ProdutoService {
         }
       }
 
-      let principal = false;
-      if (!existePrincipal) {
-        principal = true;
-        existePrincipal = true;
-      }
-
-      await this.ljService.addImagem(produto, info, principal);
+      await this.ljService.addImagem(produto, info, false);
     }
   }
 
@@ -605,15 +610,19 @@ export class ProdutoService {
   }
 
   async validaImagens(item) {
-    const arquivos = await this.carregaImagens(item);
-    if (!(arquivos && arquivos.length)) {
-      return;
-    }
-
-    for (const arquivo of arquivos) {
-      if (!arquivo.imagem) {
-        throw new NegocioException('Uma dos arquivos enviados não é imagem.');
+    try {
+      const arquivos = await this.carregaImagens(item);
+      if (!(arquivos && arquivos.length)) {
+        return;
       }
+
+      for (const arquivo of arquivos) {
+        if (!arquivo.imagem) {
+          throw new NegocioException('Uma dos arquivos enviados não é imagem.');
+        }
+      }
+    } catch (error) {
+      throw new NegocioException('Falha ao carregar imagens.');
     }
   }
 

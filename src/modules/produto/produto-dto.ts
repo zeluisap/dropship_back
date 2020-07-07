@@ -82,6 +82,12 @@ export class CreateProdutoDto {
   precoPromocional: Number;
 
   @ApiProperty({
+    description: 'ID da imagem principal do produto.',
+  })
+  @IsOptional()
+  imagemPrincipal: String;
+
+  @ApiProperty({
     description: 'Listagem dos ids das imagens do produto.',
   })
   @IsOptional()
@@ -194,6 +200,12 @@ export class EditarProdutoDto {
   @Type(() => LucroDto)
   @IsOptional()
   lucro: LucroDto;
+
+  @ApiProperty({
+    description: 'ID da imagem principal do produto.',
+  })
+  @IsOptional()
+  imagemPrincipal: String;
 
   @ApiProperty({
     description: 'Listagem dos ids das imagens do produto.',
