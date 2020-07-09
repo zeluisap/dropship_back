@@ -65,12 +65,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
     //   errorMessage = exception.message;
     // }
 
+    const error = {
+      message: errorMessage,
+      messages,
+    };
+
+    if (messages) {
+      error.message = messages;
+    }
+
     if (!isGraphql) {
       return response.status(status).json({
-        error: {
-          message: errorMessage,
-          messages,
-        },
+        error,
       });
     }
 
