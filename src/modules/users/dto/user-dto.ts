@@ -35,12 +35,13 @@ export class LucroDto {
   tipo: TipoLucro;
 
   @ApiProperty()
-  @IsNumberString(
+  @IsNumber(
     {},
     {
       message: 'Valor do lucro inválido ou não informado.',
     },
   )
+  @Transform((valor, obj) => (obj.valor = parseFloat(valor)))
   valor: Number;
 }
 
