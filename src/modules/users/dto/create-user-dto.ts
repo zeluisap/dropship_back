@@ -123,6 +123,7 @@ export class CreateUserDto {
     message: 'Campo tipo usuário inválido',
   })
   @Transform((valor, obj) => (obj.tipo = valor.toUpperCase()))
+  @IsOptional()
   tipo: TipoUsuario;
 
   @ApiProperty()
@@ -172,5 +173,6 @@ export class CreateUserDto {
     each: true,
   })
   @Type(() => MapeamentoDto)
+  @IsOptional()
   mapeamento: MapeamentoDto[];
 }

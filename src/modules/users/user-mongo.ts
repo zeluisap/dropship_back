@@ -114,6 +114,12 @@ export const getUserSchema = function() {
         autorizado: false,
       });
     }
+
+    if (!user.get('tipo')) {
+      user.set({
+        tipo: TipoUsuario.PARCEIRO,
+      });
+    }
   });
 
   schema.plugin(mongoosePaginate);

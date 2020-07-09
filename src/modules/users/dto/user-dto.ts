@@ -5,6 +5,7 @@ import {
   IsNumber,
   ValidateNested,
   Validate,
+  IsNumberString,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -34,7 +35,7 @@ export class LucroDto {
   tipo: TipoLucro;
 
   @ApiProperty()
-  @IsNumber(
+  @IsNumberString(
     {},
     {
       message: 'Valor do lucro inválido ou não informado.',

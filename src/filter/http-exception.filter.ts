@@ -70,7 +70,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       messages,
     };
 
-    if (messages) {
+    if (messages && messages.length) {
       error.message = messages;
     }
 
