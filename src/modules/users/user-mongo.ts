@@ -16,10 +16,8 @@ export interface User extends Document {
     valor: number;
   };
   informacaoBancaria: {
-    banco: {
-      codigo: string;
-      nome: string;
-    };
+    bancoCodigo: string;
+    bancoNome: string;
     agencia: string;
     conta: string;
   };
@@ -59,10 +57,8 @@ export const UserSchema = new Schema(
       valor: Number,
     },
     informacaoBancaria: {
-      banco: {
-        codigo: String,
-        nome: String,
-      },
+      bancoCodigo: String,
+      bancoNome: String,
       agencia: String,
       conta: String,
     },

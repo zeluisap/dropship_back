@@ -19,32 +19,20 @@ import {
 import { TipoUsuario, LucroDto } from './user-dto';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class BancoDto {
+export class InformacaoBancariaDto {
   @ApiProperty()
   @IsNotEmpty({
     message: 'Campo código do banco obrigatório.',
   })
   @Validate(BancoCodigoValidador)
-  codigo: string;
+  bancoCodigo: string;
 
   @ApiProperty()
   @IsNotEmpty({
     message: 'Campo nome do banco obrigatório.',
   })
   @Transform((valor, obj) => (obj.nome = valor.toUpperCase()))
-  nome: string;
-}
-
-export class InformacaoBancariaDto {
-  @ApiProperty()
-  @IsNotEmpty({
-    message: 'Campo banco não informado.',
-  })
-  @ValidateNested({
-    message: 'Campo banco não pode ser vazio.',
-  })
-  @Type(() => BancoDto)
-  banco: BancoDto;
+  bancoNome: string;
 
   @ApiProperty()
   @IsNotEmpty({
