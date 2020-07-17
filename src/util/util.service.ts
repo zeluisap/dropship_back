@@ -89,6 +89,20 @@ export class UtilService {
     return await model.paginate(filtro, { page, limit, populate, sort });
   }
 
+  async paginarAggregate(model: any, agg: any, options) {
+    const page = _.get(options, 'page') || 1;
+    const limit = _.get(options, 'limit') || 20;
+
+    if (limit < 1 || limit > 50) {
+      throw new NegocioException('O valor do limit deve estar entre 1 e 50.');
+    }
+
+    return await model.aggregatePaginate(agg, {
+      page,
+      limit,
+    });
+  }
+
   async chainCommand(objeto, commands, ...args) {
     if (!objeto) {
       throw new NegocioException(

@@ -234,4 +234,18 @@ export class LjService {
       mime: imagem.contentType,
     });
   }
+
+  listApiFields() {
+    return [
+      'origem_id',
+      'nome',
+      'descricao_completa',
+      'categoria',
+      'marca',
+      'quantidade',
+      'preco_cheio',
+      'preco_custo',
+      'preco_promocional',
+    ];
+  }
 }

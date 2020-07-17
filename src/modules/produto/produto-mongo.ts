@@ -1,5 +1,6 @@
 import { Document, Schema } from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate-v2';
+import * as paginate from 'mongoose-paginate-v2';
+import * as aggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 export interface Produto extends Document {
   readonly origemId: string;
@@ -100,7 +101,8 @@ export const getProdutoSchema = function() {
     }
   });
 
-  schema.plugin(mongoosePaginate);
+  schema.plugin(paginate);
+  schema.plugin(aggregatePaginate);
 
   // schema.set('toJSON', {
   //   transform: function(doc, ret, options) {

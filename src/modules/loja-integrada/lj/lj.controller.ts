@@ -16,4 +16,13 @@ export class LjController {
   async hook(@Body() json) {
     return await this.ljService.hook(json);
   }
+
+  @ApiOperation({
+    description: 'Lista de campos do produto para o loja integrada.',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Post('hook')
+  listApiFields() {
+    return this.ljService.listApiFields();
+  }
 }
