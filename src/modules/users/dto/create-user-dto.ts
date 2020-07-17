@@ -7,7 +7,6 @@ import {
   ValidateNested,
   Validate,
   IsOptional,
-  IsNumberString,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -52,32 +51,23 @@ export class InformacaoBancariaDto {
 
 export class PrazoFormaPagamentoDto {
   @ApiProperty()
-  @IsNumberString(
-    {},
-    {
-      message: 'Campo dias de prazo para DINHEIRO não informado.',
-    },
-  )
+  @IsInt({
+    message: 'Campo dias de prazo para DINHEIRO não informado.',
+  })
   @Transform((valor, obj) => (obj.dinheiro = parseInt(valor)))
   dinheiro: number;
 
   @ApiProperty()
-  @IsNumberString(
-    {},
-    {
-      message: 'Campo dias de prazo para DINHEIRO não informado.',
-    },
-  )
+  @IsInt({
+    message: 'Campo dias de prazo para CARTÃO DE DÉBITO não informado.',
+  })
   @Transform((valor, obj) => (obj.cartaoDebito = parseInt(valor)))
   cartaoDebito: number;
 
   @ApiProperty()
-  @IsNumberString(
-    {},
-    {
-      message: 'Campo dias de prazo para DINHEIRO não informado.',
-    },
-  )
+  @IsInt({
+    message: 'Campo dias de prazo para CARTÃO DE CRÉDITO não informado.',
+  })
   @Transform((valor, obj) => (obj.cartaoCredito = parseInt(valor)))
   cartaoCredito: number;
 }
