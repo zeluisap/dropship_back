@@ -54,18 +54,21 @@ export class PrazoFormaPagamentoDto {
   @IsInt({
     message: 'Campo dias de prazo para DINHEIRO não informado.',
   })
+  @Transform((valor, obj) => (obj.dinheiro = parseInt(valor)))
   dinheiro: number;
 
   @ApiProperty()
   @IsInt({
     message: 'Campo dias de prazo para CARTÃO DE DÉBITO não informado.',
   })
+  @Transform((valor, obj) => (obj.cartaoDebito = parseInt(valor)))
   cartaoDebito: number;
 
   @ApiProperty()
   @IsInt({
     message: 'Campo dias de prazo para CARTÃO DE CRÉDITO não informado.',
   })
+  @Transform((valor, obj) => (obj.cartaoCredito = parseInt(valor)))
   cartaoCredito: number;
 }
 
