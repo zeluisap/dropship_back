@@ -46,18 +46,21 @@ export class AlterarPrazoFormaPagamentoDto {
   @IsInt({
     message: 'Campo dias de prazo para DINHEIRO não informado.',
   })
+  @Transform((valor, obj) => (obj.dinheiro = parseInt(valor)))
   @IsOptional()
   dinheiro: number;
 
   @IsInt({
     message: 'Campo dias de prazo para CARTÃO DE DÉBITO não informado.',
   })
+  @Transform((valor, obj) => (obj.dinheiro = parseInt(valor)))
   @IsOptional()
   cartaoDebito: number;
 
   @IsInt({
     message: 'Campo dias de prazo para CARTÃO DE CRÉDITO não informado.',
   })
+  @Transform((valor, obj) => (obj.dinheiro = parseInt(valor)))
   @IsOptional()
   cartaoCredito: number;
 }
