@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, Body } from '@nestjs/common';
+import { Controller, UseGuards, Post, Body, Get } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 
 import { LjService } from './lj-service';
@@ -21,7 +21,7 @@ export class LjController {
     description: 'Lista de campos do produto para o loja integrada.',
   })
   @UseGuards(JwtAuthGuard)
-  @Post('hook')
+  @Get('list-fields')
   listApiFields() {
     return this.ljService.listApiFields();
   }
