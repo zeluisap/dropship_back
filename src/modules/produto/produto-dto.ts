@@ -8,8 +8,29 @@ import {
   IsEnum,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
-import { LucroDto } from 'src/modules/users/dto/user-dto';
+import { LucroDto, TipoLucro } from 'src/modules/users/dto/user-dto';
 import { ApiProperty } from '@nestjs/swagger';
+
+export class EditarLucroDto {
+  @ApiProperty()
+  @IsEnum(TipoLucro, {
+    message: 'Campo tipo lucro inválido',
+  })
+  @Transform((valor, obj) => (obj.tipo = valor.toLowerCase()))
+  @IsOptional()
+  tipo: TipoLucro;
+
+  @ApiProperty()
+  @IsNumber(
+    {},
+    {
+      message: 'Valor do lucro inválido ou não informado.',
+    },
+  )
+  @Transform((valor, obj) => (obj.valor = parseFloat(valor)))
+  @IsOptional()
+  valor: Number;
+}
 
 export class CreateProdutoDto {
   @ApiProperty()
