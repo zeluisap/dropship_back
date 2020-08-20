@@ -569,9 +569,13 @@ export class ProdutoService {
       throw new NegocioException('Falha, produto não localizado.');
     }
 
-    const parceiro_id = produto.get('parceiro._id').toJSON();
+    const parceiro_id = produto.get('parceiro._id')?.toJSON();
     if (!isAdmin && usuario_id !== parceiro_id) {
       throw new NegocioException('Falha, produto não pertence ao parceiro.');
+    }
+
+    if (dto.parceiro && !isAdmin) {
+      delete dto.parceiro;
     }
 
     const lucro = _.get(dto, 'lucro');

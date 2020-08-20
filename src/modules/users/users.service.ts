@@ -405,6 +405,13 @@ export class UsersService {
       filtros['autorizado'] = autorizado;
     }
 
+    const tipo = options.tipo;
+    if (tipo) {
+      filtros['tipo'] = { $regex: tipo, $options: 'i' };
+    }
+
+    options.sort = 'nome';
+
     return await this.util.paginar(this.userModel, filtros, options);
   }
 

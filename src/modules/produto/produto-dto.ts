@@ -98,6 +98,14 @@ export class EditarProdutoDto {
   @ApiProperty({
     required: false,
   })
+  @IsOptional({
+    message: 'Parceiro vinculado ao produto (apenas ADMINISTRADOR).',
+  })
+  parceiro: String;
+
+  @ApiProperty({
+    required: false,
+  })
   @IsNumberString(
     {},
     {
