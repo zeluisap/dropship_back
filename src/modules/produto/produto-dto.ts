@@ -226,9 +226,9 @@ export class EditarProdutoDto {
   @ValidateNested({
     message: 'Campo lucro não informado.',
   })
-  @Type(() => LucroDto)
+  @Type(() => EditarLucroDto)
   @IsOptional()
-  lucro: LucroDto;
+  lucro: EditarLucroDto;
 
   @ApiProperty({
     description: 'ID da imagem principal do produto.',
