@@ -19,6 +19,7 @@ import {
 } from './dto/user-dto';
 import * as _ from 'lodash';
 import { UtilService } from 'src/util/util.service';
+import { mapperList } from 'src/util/string.mappers';
 
 @Injectable()
 export class UsersService {

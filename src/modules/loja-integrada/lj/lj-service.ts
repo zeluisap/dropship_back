@@ -237,15 +237,15 @@ export class LjService {
 
   listApiFields() {
     return [
-      'origem_id',
+      'origemId',
       'nome',
-      'descricao_completa',
+      'descricaoCompleta',
       'categoria',
       'marca',
       'quantidade',
-      'preco_cheio',
-      'preco_custo',
-      'preco_promocional',
+      'precoCheio',
+      'precoCusto',
+      'precoPromocional',
     ];
   }
 }

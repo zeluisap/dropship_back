@@ -27,10 +27,19 @@ import {
   ApiOperation,
   ApiParam,
 } from '@nestjs/swagger';
+import { mapperList } from 'src/util/string.mappers';
 
 @Controller('user')
 export class UserController {
   constructor(private usersService: UsersService) {}
+
+  @ApiOperation({
+    description: 'Lista dos mappers habilitados.',
+  })
+  @Get('mappers')
+  mappers() {
+    return mapperList;
+  }
 
   @ApiOperation({
     description: 'Cadastro de novo usuário usuário pelo Administrador.',

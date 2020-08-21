@@ -23,7 +23,7 @@ export const decodeDateTime = text => {
 
 export const encodeNumber = text => {
   if (!text) {
-    return text;
+    return 0;
   }
 
   try {
@@ -43,3 +43,35 @@ export const numberDecimal2 = text => {
   }
   return valor.toFixed(2);
 };
+
+export const mapperList = [
+  {
+    name: 'htmlStrong',
+    description: 'Envolve o texto em uma tag <strong>.',
+  },
+  {
+    name: 'upperCase',
+    description: 'Converte o texto para maiúsculo.',
+  },
+  {
+    name: 'lowerCase',
+    description: 'Converte o texto para minúsculo.',
+  },
+  {
+    name: 'decodeDate',
+    description: 'Transforma data do formato DD/MM/YYYY para YYYY-MM-DD.',
+  },
+  {
+    name: 'decodeDateTime',
+    description:
+      'Transforma data e hora do formato DD/MM/YYYY HH:mm:SS para YYYY-MM-DD HH:mm:SS.',
+  },
+  {
+    name: 'encodeNumber',
+    description: 'Transforma número para padrão linux.',
+  },
+  {
+    name: 'numberDecimal2',
+    description: 'Transforma número para padrão linux com 2 casas decimais.',
+  },
+];
