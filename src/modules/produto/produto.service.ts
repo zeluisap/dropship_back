@@ -1,4 +1,10 @@
-import { Injectable, HttpException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  BadRequestException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { UtilService } from 'src/util/util.service';
 import * as _ from 'lodash';
 import * as mappers from '../../util/string.mappers';
@@ -13,6 +19,7 @@ import { NegocioException } from 'src/exceptions/negocio-exception';
 import { CreateProdutoDto, EditarProdutoDto } from './produto-dto';
 import { Produto } from './produto-mongo';
 import { ReposService } from '../repos/repos.service';
+import { AuthService } from '../auth/auth.service';
 
 const StatusProduto = {
   ADICIONADO: 1,
@@ -28,6 +35,7 @@ export class ProdutoService {
 
   constructor(
     private utilService: UtilService,
+    @Inject(forwardRef(() => CurrentUserService))
     private currentUserService: CurrentUserService,
     private userService: UsersService,
     private ljService: LjService,
@@ -169,12 +177,14 @@ export class ProdutoService {
       usuario = await this.userService.findOne({
         _id: parceiroId,
       });
-      if (!usuario) {
-        usuario = await this.currentUserService.getUsuarioLogado();
-      }
     }
 
-    await this.validarProdutos(items);
+    if (!usuario) {
+      usuario = await this.currentUserService.getUsuarioLogado();
+      // usuario = await this.auth.getUsuarioLogado();
+    }
+
+    // await this.validarProdutos(items);
     /**
      * retirei o controle de sessão .. pois a versão que estou utilizando pra testar .. não disponibiliza esse recurso.
      */
@@ -184,19 +194,30 @@ export class ProdutoService {
     const retorno = {
       adicionados: 0,
       alterados: 0,
+      erros: [],
     };
 
     try {
       for (const item of items) {
-        // const op = await this.salvarProduto(item, session);
-        const op = await this.salvarProduto(item, usuario);
-        switch (op) {
-          case StatusProduto.ADICIONADO:
-            retorno.adicionados++;
-            break;
-          case StatusProduto.ALTERADO:
-            retorno.alterados++;
-            break;
+        try {
+          const obj = plainToClass(CreateProdutoDto, item);
+          await validateOrReject(obj);
+
+          // const op = await this.salvarProduto(item, session);
+          const op = await this.salvarProduto(item, usuario);
+          switch (op) {
+            case StatusProduto.ADICIONADO:
+              retorno.adicionados++;
+              break;
+            case StatusProduto.ALTERADO:
+              retorno.alterados++;
+              break;
+          }
+        } catch (error) {
+          retorno.erros.push({
+            item,
+            erros: this.util.getErrorMessages(error),
+          });
         }
       }
 

@@ -16,7 +16,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: req => {
         const auth = _.get(req, 'headers.authorization');
         if (auth) {
-          return auth.replace('Bearer ', '');
+          const token = auth.replace('Bearer ', '');
+          req.session.token = token;
+          return token;
         }
 
         let token = _.get(req, 'session.token');

@@ -187,4 +187,37 @@ export class UtilService {
       })
       .toLowerCase();
   }
+
+  getErrorMessages(error) {
+    if (!(_.isArray(error) && error.length)) {
+      return [this.getErrorMessage(error)];
+    }
+
+    const messages = [];
+
+    for (const err of error) {
+      if (!err.constraints) {
+        return ['Erro desconhecido ao importar registro.'];
+      }
+
+      const keys = Object.keys(err.constraints);
+      for (const key of keys) {
+        messages.push(err.constraints[key]);
+      }
+    }
+
+    return messages;
+  }
+
+  getErrorMessage(error) {
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    if (error.message) {
+      return error.message;
+    }
+
+    return 'Ocorreu um problema ao executar operação';
+  }
 }
