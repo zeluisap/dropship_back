@@ -381,6 +381,10 @@ export class UsersService {
   }
 
   getLogado() {
+    if (!(this.logado && this.logado.id)) {
+      return null;
+    }
+
     return this.logado;
   }
 
@@ -442,5 +446,34 @@ export class UsersService {
     }
 
     return filtros;
+  }
+
+  async getParceiroOuLogado(parceiroId) {
+    let usuario = null;
+
+    if (parceiroId) {
+      usuario = await this.findOne({
+        _id: parceiroId,
+      });
+
+      if (usuario) {
+        return usuario;
+      }
+    }
+
+    const logado = this.getLogado();
+    if (!logado) {
+      return null;
+    }
+
+    usuario = await this.findOne({
+      _id: logado.id,
+    });
+
+    if (!usuario) {
+      return null;
+    }
+
+    return usuario;
   }
 }

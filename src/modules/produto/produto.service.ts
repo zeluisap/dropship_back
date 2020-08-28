@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 import * as mappers from '../../util/string.mappers';
 import { CurrentUserService } from 'src/modules/auth/current-user/current-user.service';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, PaginateModel } from 'mongoose';
+import { Model, PaginateModel, Types } from 'mongoose';
 import { validateOrReject, isDecimal } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import { UsersService } from 'src/modules/users/users.service';
@@ -98,13 +98,13 @@ export class ProdutoService {
     if (!usuario) {
       usuario = await this.currentUserService.getUsuarioLogado();
       if (!usuario) {
-        throw 'Falha! Usuário logado não localizado.';
+        throw new NegocioException('Falha! Usuário logado não localizado.');
       }
     }
 
     const { mapeamento } = usuario;
     if (!(mapeamento && mapeamento.length)) {
-      throw 'Falha! Nenhum mapeamento informado.';
+      throw new NegocioException('Falha! Nenhum mapeamento informado.');
     }
 
     const mapeados: any = {};
@@ -172,17 +172,7 @@ export class ProdutoService {
   }
 
   async importarConfirma(items, parceiroId = null) {
-    let usuario = null;
-    if (parceiroId) {
-      usuario = await this.userService.findOne({
-        _id: parceiroId,
-      });
-    }
-
-    if (!usuario) {
-      usuario = await this.currentUserService.getUsuarioLogado();
-      // usuario = await this.auth.getUsuarioLogado();
-    }
+    const usuario = await this.userService.getParceiroOuLogado(parceiroId);
 
     // await this.validarProdutos(items);
     /**
@@ -532,18 +522,27 @@ export class ProdutoService {
   }
 
   async listar(options) {
+    const isAdmin = this.userService.isLogadoAdmin();
+    const logado = this.userService.getLogado();
+
     const filtros: any = {};
     const nome = _.get(options, 'nome');
     if (nome) {
       filtros['nome'] = { $regex: '.*' + nome + '.*', $options: 'i' };
     }
 
-    if (this.userService.isLogadoAdmin()) {
+    if (isAdmin) {
       const parceiro_id = _.get(options, 'parceiro_id');
       if (parceiro_id) {
-        filtros['parceiro._id'] = parceiro_id;
+        filtros['parceiro'] = Types.ObjectId(parceiro_id);
       }
     }
+
+    if (!isAdmin) {
+      filtros['parceiro'] = logado._id;
+    }
+
+    options.populate = [{ path: 'parceiro', select: 'nome tipo' }];
 
     return await this.util.paginar(this.produtoModel, filtros, options);
   }
