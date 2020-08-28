@@ -34,6 +34,86 @@ export class EditarLucroDto {
 
 export class CreateProdutoDto {
   @ApiProperty()
+  @IsNotEmpty({
+    message: 'Campo nome obrigatório!',
+  })
+  nome: String;
+
+  @ApiProperty()
+  @IsNotEmpty({
+    message: 'Campo descricaoCompleta obrigatório!',
+  })
+  descricaoCompleta: String;
+
+  @ApiProperty()
+  @IsNotEmpty({
+    message: 'Campo categoria obrigatório!',
+  })
+  categoria: String;
+
+  @ApiProperty()
+  @IsNotEmpty({
+    message: 'Campo marca obrigatório!',
+  })
+  marca: String;
+
+  @ApiProperty()
+  @IsNumber(
+    {},
+    {
+      message: 'Campo quantidade inválido, somente números!',
+    },
+  )
+  quantidade: Number;
+
+  @ApiProperty()
+  @IsNumber(
+    {},
+    {
+      message: 'Campo precoCheio inválido, somente números!',
+    },
+  )
+  precoCheio: Number;
+
+  @ApiProperty()
+  @IsNumber(
+    {},
+    {
+      message: 'Campo precoCusto inválido, somente números!',
+    },
+  )
+  precoCusto: Number;
+
+  @ApiProperty()
+  @IsNumber(
+    {},
+    {
+      message: 'Campo precoPromocional inválido, somente números!',
+    },
+  )
+  precoPromocional: Number;
+
+  @ApiProperty({
+    description: 'ID da imagem principal do produto.',
+  })
+  @IsOptional()
+  imagemPrincipal: String;
+
+  @ApiProperty({
+    description: 'Listagem dos ids das imagens do produto.',
+  })
+  @IsOptional()
+  imagens: String[];
+
+  @ApiProperty({
+    description: 'ID do parceiro.',
+  })
+  @IsOptional()
+  parceiro: String;
+}
+
+export class CreateProdutoImportacaoDto {
+  @ApiProperty()
   @IsNumberString(
     {},
     {

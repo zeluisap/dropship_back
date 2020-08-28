@@ -16,7 +16,11 @@ import { plainToClass } from 'class-transformer';
 import { UsersService } from 'src/modules/users/users.service';
 import { LjService } from 'src/modules/loja-integrada/lj/lj-service';
 import { NegocioException } from 'src/exceptions/negocio-exception';
-import { CreateProdutoDto, EditarProdutoDto } from './produto-dto';
+import {
+  CreateProdutoDto,
+  EditarProdutoDto,
+  CreateProdutoImportacaoDto,
+} from './produto-dto';
 import { Produto } from './produto-mongo';
 import { ReposService } from '../repos/repos.service';
 import { AuthService } from '../auth/auth.service';
@@ -190,7 +194,7 @@ export class ProdutoService {
     try {
       for (const item of items) {
         try {
-          const obj = plainToClass(CreateProdutoDto, item);
+          const obj = plainToClass(CreateProdutoImportacaoDto, item);
           await validateOrReject(obj);
 
           // const op = await this.salvarProduto(item, session);
@@ -230,7 +234,7 @@ export class ProdutoService {
     const errors = [];
     for (const item of items) {
       try {
-        const obj = plainToClass(CreateProdutoDto, item);
+        const obj = plainToClass(CreateProdutoImportacaoDto, item);
         await validateOrReject(obj);
       } catch (error) {
         errors.push(error);
@@ -548,7 +552,13 @@ export class ProdutoService {
   }
 
   async novo(dto: CreateProdutoDto) {
-    const usuario = this.userService.getLogado();
+    let usuario = this.userService.getLogado();
+    if (dto.parceiro) {
+      const u = await this.userService.getPorId(dto.parceiro);
+      if (u) {
+        usuario = u;
+      }
+    }
 
     const origemId = _.get(dto, 'origemId');
 
