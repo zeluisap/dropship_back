@@ -23,6 +23,37 @@ export class RetiradaService {
     @InjectModel('Retirada') private retiradaModel: PaginateModel<Retirada>,
   ) {}
 
+  async get(id) {
+    if (!id) {
+      return null;
+    }
+
+    const obj = await this.retiradaModel
+      .findOne({
+        _id: id,
+      })
+      .populate([
+        {
+          path: 'parceiro',
+          select: 'nome email',
+        },
+        {
+          path: 'analise.usuario',
+          select: 'nome email',
+        },
+      ]);
+
+    if (!obj) {
+      return null;
+    }
+
+    if (obj.analise.comprovante) {
+      obj.analise.comprovante = await this.repos.get(obj.analise.comprovante);
+    }
+
+    return obj;
+  }
+
   /**
    * o relatório da retirada, deve infomar as retiradas feitas, o valor disponível para a data e as datas de
    * retirada futura.
@@ -271,6 +302,9 @@ export class RetiradaService {
     });
 
     const obj = await retirada.save();
+
+    //remover as retiradas dos pedidos
+    await this.pedidoService.cancelarRetirada(retirada);
 
     const nomeFuncNotifica = 'notificaRetiradaCancelada' + metodoNotificacao;
 

@@ -431,21 +431,23 @@ export class UsersService {
   }
 
   filtroParceiro(filtros = {}) {
+    let retorno = {};
+
     const filtro_parceiro_id = _.get(filtros, 'parceiro_id');
     if (filtro_parceiro_id) {
-      filtros = {
+      retorno = {
         parceiro: filtro_parceiro_id,
       };
     }
 
     if (!this.isLogadoAdmin()) {
       const logado = this.getLogado();
-      filtros = {
+      retorno = {
         parceiro: logado._id,
       };
     }
 
-    return filtros;
+    return retorno;
   }
 
   async getParceiroOuLogado(parceiroId) {

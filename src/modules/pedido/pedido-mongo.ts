@@ -29,7 +29,7 @@ export interface Pedido extends Document {
     aprovado: boolean;
     cancelado: boolean;
     concluido: boolean;
-    notificar_comprador: boolean;
+    notificarComprador: boolean;
   };
 
   dataCriacao: Date;
@@ -80,7 +80,7 @@ export const getPedidoSchema = function() {
       aprovado: Boolean,
       cancelado: Boolean,
       concluido: Boolean,
-      notificar_comprador: Boolean,
+      notificarComprador: Boolean,
     },
 
     dataCriacao: Date,

@@ -90,6 +90,20 @@ export class RetiradaController {
   }
 
   @ApiOperation({
+    description: 'Detalhe da retirada.',
+  })
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'id',
+    description: 'ID da retirada.',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async get(@Param('id') id) {
+    return await this.retiradaService.get(id);
+  }
+
+  @ApiOperation({
     description: 'Listagem das retiradas.',
   })
   @ApiBearerAuth()

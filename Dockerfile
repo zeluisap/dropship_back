@@ -5,7 +5,6 @@ FROM node:12
 WORKDIR /app
 
 RUN npm i -g @nestjs/cli
-
 # RUN npm i
 
 CMD ["npm", "run", "start"]

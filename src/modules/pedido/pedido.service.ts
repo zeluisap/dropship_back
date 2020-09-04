@@ -271,8 +271,7 @@ export class PedidoService {
         aprovado: _.get(dto, 'situacao.aprovado') || false,
         cancelado: _.get(dto, 'situacao.cancelado') || false,
         concluido: _.get(dto, 'situacao.final') || false,
-        notificar_comprador:
-          _.get(dto, 'situacao.notificar_comprador') || false,
+        notificarComprador: _.get(dto, 'situacao.notificar_comprador') || false,
       },
       dataCriacao,
     };
@@ -466,9 +465,10 @@ export class PedidoService {
     }
 
     return proximas.map(item => {
-      const retorno = {};
-      retorno[moment(item._id).format('YYYY-MM-DD')] = item.valorTotal;
-      return retorno;
+      return {
+        dataRetirada: moment(item._id).format('YYYY-MM-DD'),
+        valor: item.valorTotal,
+      };
     });
   }
 
@@ -536,5 +536,23 @@ export class PedidoService {
     }
 
     return item;
+  }
+
+  async cancelarRetirada(retirada) {
+    if (!(retirada && retirada._id)) {
+      return;
+    }
+
+    await this.pedidoItemModel.update(
+      {
+        retirada: retirada._id,
+      },
+      {
+        retirada: null,
+      },
+      {
+        multi: true,
+      },
+    );
   }
 }
