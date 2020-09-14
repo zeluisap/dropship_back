@@ -6,15 +6,27 @@ import {
   Inject,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { AuthGuard } from '@nestjs/passport';
+import { UsersService } from 'src/modules/users/users.service';
 
 @Injectable()
-export class SenhaAuthGuard extends AuthGuard('jwt') {
+export class SenhaAuthGuard {
+  constructor(private user: UsersService) {}
+
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    // adicionar lógica de autenticação
-    return super.canActivate(context);
+    const req = context.switchToHttp().getRequest();
+    const user = this.user.getLogado();
+
+    if (!(req && req.body && req.body.senha)) {
+      throw new UnauthorizedException('Falha ao validar senha do usuário.');
+    }
+
+    if (user.senha !== req.body.senha) {
+      throw new UnauthorizedException('Falha ao validar senha do usuário!');
+    }
+
+    return user;
   }
 
   handleRequest(err, user, info) {

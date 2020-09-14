@@ -17,6 +17,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { AdminAuthGuard } from '../auth/guards/admin-auth.guard';
+import { SenhaAuthGuard } from '../auth/guards/senha-auth.guard';
 
 @Controller('retirada')
 export class RetiradaController {
@@ -41,10 +42,10 @@ export class RetiradaController {
     description: 'Pedido de retirada de valor.',
   })
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SenhaAuthGuard)
   @Post('solicitar')
-  async solicitar() {
-    return await this.retiradaService.solicitar();
+  async solicitar(@Body() params) {
+    return await this.retiradaService.solicitar(params);
   }
 
   @ApiOperation({

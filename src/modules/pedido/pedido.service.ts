@@ -11,6 +11,7 @@ import { UsersService } from '../users/users.service';
 import { NegocioException } from 'src/exceptions/negocio-exception';
 import { FormaPagamentoService } from '../forma-pagamento/forma-pagamento.service';
 import { ParametroService } from '../parametro/parametro.service';
+import { VALOR_TICKETS_POR_PAGAMENTO } from '../retirada/retirada-dto';
 
 @Injectable()
 export class PedidoService {
@@ -397,6 +398,57 @@ export class PedidoService {
     return prazos.sort().shift();
   }
 
+  async getMarcasRetiradaDisponivel(filtros = {}) {
+    filtros = this.userService.filtroParceiro({ ...filtros });
+
+    const disponivel = await this.pedidoItemModel.find({
+      dataRetirada: {
+        $lte: moment()
+          .endOf('day')
+          .toDate(),
+      },
+      retirada: null,
+      ...filtros,
+    });
+
+    if (!(disponivel && disponivel.length)) {
+      return 0;
+    }
+
+    let valorTotal = 0;
+    for (const p of disponivel) {
+      valorTotal = valorTotal + p.precoCusto;
+    }
+
+    if (valorTotal <= VALOR_TICKETS_POR_PAGAMENTO) {
+      return [0, valorTotal];
+    }
+
+    const marcas = [];
+    const d = [];
+    // valorTotal = 0;
+    let valor = 0;
+    for (const p of disponivel) {
+      valor = valor + p.precoCusto;
+      d.push(p);
+      marcas.push({
+        valor,
+        itens: [...d],
+      });
+      // valorTotal = valorTotal + p.precoCusto;
+      // if (valor > VALOR_TICKETS_POR_PAGAMENTO) {
+      //   marcas.push(valorTotal);
+      //   valor = 0;
+      // }
+    }
+
+    // if (valor) {
+    //   marcas.push(valorTotal);
+    // }
+
+    return marcas;
+  }
+
   async getTotalRetiradaDisponivel(filtros = {}) {
     filtros = this.userService.filtroParceiro({ ...filtros });
 
@@ -404,11 +456,11 @@ export class PedidoService {
       {
         $match: {
           dataRetirada: {
-            $lte: moment().toDate(),
+            $lte: moment()
+              .endOf('day')
+              .toDate(),
           },
-          retirada: {
-            $eq: null,
-          },
+          retirada: null,
           ...filtros,
         },
       },
@@ -472,16 +524,25 @@ export class PedidoService {
     });
   }
 
-  async getRetiradaItensDisponiveis(filtros = {}) {
-    filtros = this.userService.filtroParceiro({ ...filtros });
+  async getRetiradaItensDisponiveis(filtros: any = {}) {
+    let filtro: any = this.userService.filtroParceiro({ ...filtros });
 
-    return await this.pedidoItemModel.find({
+    filtro = {
       dataRetirada: {
-        $lte: moment().toDate(),
+        $lte: moment()
+          .endOf('day')
+          .toDate(),
       },
       retirada: null,
-      ...filtros,
-    });
+    };
+
+    if (filtros.ids && filtros.ids.length) {
+      filtro._id = {
+        $in: filtros.ids.map(id => Types.ObjectId(id)),
+      };
+    }
+
+    return await this.pedidoItemModel.find(filtro);
   }
 
   async listarItens(options) {

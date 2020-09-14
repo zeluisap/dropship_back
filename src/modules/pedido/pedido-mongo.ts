@@ -37,9 +37,9 @@ export interface Pedido extends Document {
 }
 
 export interface PedidoItem extends Document {
-  pedido: {};
-  produto: {};
-  parceiro: {};
+  pedido: any;
+  produto: any;
+  parceiro: any;
 
   quantidade: number;
   precoCheio: number;
@@ -48,7 +48,7 @@ export interface PedidoItem extends Document {
   precoVenda: number;
 
   dataRetirada: Date;
-  retirada: {};
+  retirada: any;
 }
 
 export const getPedidoSchema = function() {

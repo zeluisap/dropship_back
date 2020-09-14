@@ -64,6 +64,7 @@ export class RetiradaService {
       valorPago: await this.getTotalPagas(),
       valorAguardandoAprovacao: await this.getTotalPendentes(),
       valorDisponivel: await this.pedidoService.getTotalRetiradaDisponivel(),
+      valorDisponivelMarcas: await this.pedidoService.getMarcasRetiradaDisponivel(),
       proximas: await this.pedidoService.getProximasRetiradas(),
     };
   }
@@ -122,14 +123,12 @@ export class RetiradaService {
     return pendentes.shift().valorPendente;
   }
 
-  async solicitar() {
+  async solicitar(params) {
     const logado = this.userService.getLogado();
 
-    const valorDisponivel = await this.pedidoService.getTotalRetiradaDisponivel(
-      {
-        parceiro_id: logado._id,
-      },
-    );
+    let valorDisponivel = await this.pedidoService.getTotalRetiradaDisponivel({
+      parceiro_id: logado._id,
+    });
 
     if (!valorDisponivel) {
       throw new NegocioException(
@@ -152,11 +151,22 @@ export class RetiradaService {
     //   );
     // }
 
+    let ids = [];
+    if (params && params.ids && params.ids.length) {
+      ids = params.ids;
+    }
+
     const itensDisponiveis = await this.pedidoService.getRetiradaItensDisponiveis(
       {
         parceiro_id: logado._id,
+        ids,
       },
     );
+
+    valorDisponivel = 0;
+    for (const item of itensDisponiveis) {
+      valorDisponivel = valorDisponivel + item.precoCusto;
+    }
 
     const retirada = new this.retiradaModel();
     retirada.set({
